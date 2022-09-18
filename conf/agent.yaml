@@ -1,0 +1,5 @@
+listenAddr: ":50051"
+backup:
+  mountPoint: "/var/run/backup"
+restore:
+  mountPoint: "/var/run/restore"

@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+option go_package = "syncbyte/proto";
+
+package proto;
+
+service Agent {
+    rpc StartBackup (BackupRequest) returns (BackupResponse) {}
+    rpc StartRestore (RestoreRequest) returns (RestoreResponse) {}
+    rpc GetJobStatus (GetJobRequest) returns (GetJobResponse) {}
+}
+
+message BackupRequest {
+    string          datasetname = 1;
+    bool            iscompress = 2;
+    SourceOptions   sourceOpts = 3;
+    BackendOptions  backendOpts = 4;
+}
+
+message BackupResponse {
+    string jobid = 1;
+}
+
+message RestoreRequest {
+    string          datasetname = 1;
+    bool            isuncompress = 2;
+    DestOptions     destOpts = 3;
+    BackendOptions  backendOpts = 4;
+}
+
+message RestoreResponse {
+    string jobid = 1;
+}
+
+message SourceOptions {
+    string  name = 1;
+    string  server = 2;
+    string  user = 3;
+    string  password = 4;
+    string  dbname = 5;
+    string  version = 6;
+    string  dbtype = 7;
+    int32   port = 8;
+}
+
+message DestOptions {
+    string  name = 1;
+    string  server = 2;
+    string  user = 3;
+    string  password = 4;
+    string  dbname = 5;
+    string  version = 6;
+    string  dbtype = 7;
+    int32   port = 8;
+}
+
+message BackendOptions {
+    string  endpoint = 1;
+    string  accesskey = 2;
+    string  secretkey = 3;
+    string  bucket = 4;
+}
+
+message GetJobRequest {
+    string jobid = 1;
+}
+
+message GetJobResponse {
+    string status = 1;
+}

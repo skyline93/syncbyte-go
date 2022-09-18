@@ -1,0 +1,8 @@
+kind: backend
+spec:
+  - endpoint: 127.0.0.1:9000
+    accessKey: ACCESS_KEY
+    secretKey: SECRET_KEY
+    bucket: BUCKET_NAME
+    storageType: minio
+    dataType: pg_data

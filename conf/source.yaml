@@ -1,0 +1,11 @@
+kind: source
+spec:
+  - type: postgresql
+    name: SOURCE_NAME
+    server: 127.0.0.1
+    port: 5432
+    user: DATABASE_USER
+    password: DATABASE_PASSWORD
+    dbname: DATABASE_NAME
+    version: "14.5"
+    extend: ""
