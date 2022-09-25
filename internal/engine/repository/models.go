@@ -30,6 +30,17 @@ type S3Backend struct {
 	DataType    types.BackendDataType
 }
 
+type BackupPolicy struct {
+	gorm.Model
+	ResourceID   uint
+	Retention    int
+	ScheduleType types.BackupScheduleType
+	Cron         string
+	Frequency    int
+	StartTime    types.LocalTime
+	EndTime      types.LocalTime
+}
+
 type BackupJob struct {
 	gorm.Model
 	StartTime  time.Time

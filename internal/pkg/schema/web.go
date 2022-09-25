@@ -50,16 +50,26 @@ type AddS3BackendResponse struct {
 	ID uint `json:"id"`
 }
 
+type BackupPolicyItem struct {
+	Retention    int                      `json:"retention"`
+	ScheduleType types.BackupScheduleType `json:"schedule_type"`
+	Cron         string                   `json:"cron"`
+	Frequency    int                      `json:"frequency"`
+	StartTime    types.LocalTime          `json:"start_time"`
+	EndTime      types.LocalTime          `json:"end_time"`
+}
+
 type AddSourceRequest struct {
-	Name     string       `json:"name"`
-	Server   string       `json:"server"`
-	Port     int          `json:"port"`
-	User     string       `json:"user"`
-	Password string       `json:"password"`
-	DbName   string       `json:"dbname"`
-	Extend   string       `json:"extend"`
-	Version  string       `json:"version"`
-	DbType   types.DBType `json:"type"`
+	Name         string           `json:"name"`
+	Server       string           `json:"server"`
+	Port         int              `json:"port"`
+	User         string           `json:"user"`
+	Password     string           `json:"password"`
+	DbName       string           `json:"dbname"`
+	Extend       string           `json:"extend"`
+	Version      string           `json:"version"`
+	DbType       types.DBType     `json:"type"`
+	BackupPolicy BackupPolicyItem `json:"backup_policy"`
 }
 
 type AddSourceResponse struct {

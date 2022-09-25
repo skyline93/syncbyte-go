@@ -98,6 +98,24 @@ func (h *Handler) AddDBResource(c *gin.Context) {
 		return
 	}
 
+	resourceID, err := addBackupResource(&req)
+	if err != nil {
+		schema.Response(c, nil, err)
+		return
+	}
+
+	schema.Response(c, resourceID, nil)
+}
+
+func addBackupResource(req *schema.AddSourceRequest) (resourceID uint, err error) {
+	tx := repository.Db.Begin()
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+		tx.Commit()
+	}()
+
 	dbResource := repository.DBResource{
 		Name:     req.Name,
 		DBType:   req.DbType,
@@ -110,13 +128,26 @@ func (h *Handler) AddDBResource(c *gin.Context) {
 		Args:     req.Extend,
 	}
 
-	result := repository.Db.Create(&dbResource)
-	if result.Error != nil {
-		schema.Response(c, nil, result.Error)
-		return
+	if result := repository.Db.Create(&dbResource); result.Error != nil {
+		return 0, result.Error
 	}
 
-	schema.Response(c, dbResource.ID, nil)
+	bp := req.BackupPolicy
+	backupPolicy := repository.BackupPolicy{
+		ResourceID:   dbResource.ID,
+		Retention:    bp.Retention,
+		ScheduleType: bp.ScheduleType,
+		Cron:         bp.Cron,
+		Frequency:    bp.Frequency,
+		StartTime:    bp.StartTime,
+		EndTime:      bp.EndTime,
+	}
+
+	if result := repository.Db.Create(&backupPolicy); result.Error != nil {
+		return 0, result.Error
+	}
+
+	return dbResource.ID, nil
 }
 
 func (h *Handler) ListS3Backends(c *gin.Context) {
