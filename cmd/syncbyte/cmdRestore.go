@@ -34,7 +34,8 @@ var cmdRestore = &cobra.Command{
 }
 
 type RestoreOptions struct {
-	BackupSetID uint   `json:"backup_set_id" yaml:"backupSetID"`
+	BackupSetID uint   `json:"backupSetID" yaml:"backupSetID"`
+	AgentID     uint   `json:"agentID" yaml:"agentID"`
 	Name        string `json:"name" yaml:"name"`
 	Server      string `json:"server" yaml:"server"`
 	Port        int    `json:"port" yaml:"port"`
@@ -42,7 +43,7 @@ type RestoreOptions struct {
 	Password    string `json:"password" yaml:"password"`
 	DbName      string `json:"dbname" yaml:"dbName"`
 	Version     string `json:"version" yaml:"version"`
-	DbType      string `json:"db_type" yaml:"dbType"`
+	DbType      string `json:"dbType" yaml:"dbType"`
 }
 
 var output bool
@@ -56,6 +57,7 @@ func init() {
 
 	f := cmdRestore.Flags()
 	f.UintVarP(&restoreOptions.BackupSetID, "backupset-id", "", 1, "backup set id of restore")
+	f.UintVarP(&restoreOptions.AgentID, "agent-id", "", 1, "use a agent")
 	f.StringVarP(&restoreOptions.DbType, "type", "t", "postgresql", "source type")
 	f.StringVarP(&restoreOptions.Name, "name", "n", "source", "source name")
 	f.StringVarP(&restoreOptions.Server, "server", "s", "127.0.0.1", "database host, ip or domain name")

@@ -19,17 +19,29 @@ type S3Backend struct {
 	DataType    types.BackendDataType `json:"dataType"`
 }
 
+type BackupPolicy struct {
+	Retention    int                      `json:"retention"`
+	ScheduleType types.BackupScheduleType `json:"scheduleType"`
+	Cron         string                   `json:"cron"`
+	Frequency    int                      `json:"frequency"`
+	StartTime    string                   `json:"startTime"`
+	EndTime      string                   `json:"endTime"`
+	IsCompress   bool                     `json:"isCompress"`
+	AgentID      uint                     `json:"agentID"`
+}
+
 type Source struct {
-	ID       uint         `json:"id"`
-	Name     string       `json:"name"`
-	Server   string       `json:"server"`
-	Port     int          `json:"port"`
-	User     string       `json:"user"`
-	Password string       `json:"password"`
-	DbName   string       `json:"dbname"`
-	Extend   string       `json:"extend"`
-	Version  string       `json:"version"`
-	DbType   types.DBType `json:"dbType"`
+	ID           uint         `json:"id"`
+	Name         string       `json:"name"`
+	Server       string       `json:"server"`
+	Port         int          `json:"port"`
+	User         string       `json:"user"`
+	Password     string       `json:"password"`
+	DbName       string       `json:"dbname"`
+	Extend       string       `json:"extend"`
+	Version      string       `json:"version"`
+	DbType       types.DBType `json:"dbType"`
+	BackupPolicy BackupPolicy `json:"backupPolicy"`
 }
 
 type Agent struct {

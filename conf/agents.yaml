@@ -2,5 +2,5 @@ kind: agent
 spec:
   - ip: 127.0.0.1
     port: 50051
-    hostName: "vmub"
-    hostType: restore
+    hostName: "HOSTNAME"
+    hostType: backup

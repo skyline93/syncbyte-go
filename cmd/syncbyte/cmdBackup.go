@@ -21,8 +21,7 @@ var cmdBackup = &cobra.Command{
 }
 
 type BackupOptions struct {
-	ResourceID uint `json:"resource_id"`
-	IsCompress bool `json:"is_compress"`
+	BackupPolicyID uint `json:"backupPolicyID"`
 }
 
 var backupOptions BackupOptions
@@ -31,8 +30,7 @@ func init() {
 	cmdRoot.AddCommand(cmdBackup)
 
 	f := cmdBackup.Flags()
-	f.UintVarP(&backupOptions.ResourceID, "resource-id", "r", 0, "resource id")
-	f.BoolVarP(&backupOptions.IsCompress, "compress", "", true, "compress backup file")
+	f.UintVarP(&backupOptions.BackupPolicyID, "backup-policy-id", "i", 0, "The backup policy id")
 }
 
 func startBackup(backupOpts BackupOptions) error {

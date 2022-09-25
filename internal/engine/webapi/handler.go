@@ -1,6 +1,8 @@
 package webapi
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/skyline93/syncbyte-go/internal/engine/backup"
 	"github.com/skyline93/syncbyte-go/internal/engine/options"
@@ -41,6 +43,8 @@ func (h *Handler) StartRestore(c *gin.Context) {
 		schema.Response(c, nil, err)
 		return
 	}
+
+	log.Printf("request body: %v", req)
 
 	restorer := restore.New(repository.Db)
 	rjID, resID, err := restorer.StartRestore(
