@@ -11,9 +11,9 @@ import (
 	"github.com/skyline93/syncbyte-go/internal/pkg/types"
 )
 
-func genDataSetName(sourceName string) string {
+func genDataSetName(policyID uint, sourceName string) string {
 	t := time.Now()
-	return fmt.Sprintf("%s-%s", sourceName, t.Format("20060102150405"))
+	return fmt.Sprintf("%s-%d-%s", sourceName, policyID, t.Format("20060102150405"))
 }
 
 type Backuper struct {
@@ -127,7 +127,7 @@ func (b *Backuper) StartBackup(policyID uint) (jobID, setID uint, err error) {
 		return
 	}
 
-	datasetName := genDataSetName(r.Name)
+	datasetName := genDataSetName(pl.ID, r.Name)
 
 	if jobID, setID, err = b.createBackupJob(pl.ID, pl.ResourceID, s3.ID, pl.Retention, datasetName, pl.IsCompress); err != nil {
 		log.Printf("create backup job failed, error: %v", err)
