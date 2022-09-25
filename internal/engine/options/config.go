@@ -19,6 +19,7 @@ var Opts *Options
 
 type Options struct {
 	ListenAddr string           `json:"listenAddr" mapstructure:"listenAddr"`
+	LogPath    string           `json:"logPath" mapstructure:"logPath"`
 	Database   *DatabaseOptions `json:"database" mapstructure:"database"`
 }
 
