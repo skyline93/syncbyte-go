@@ -6,6 +6,7 @@ import (
 
 	"github.com/skyline93/syncbyte-go/internal/engine/options"
 	"github.com/skyline93/syncbyte-go/internal/engine/repository"
+	"github.com/skyline93/syncbyte-go/internal/engine/scheduler"
 	"github.com/skyline93/syncbyte-go/internal/engine/webapi"
 	"github.com/spf13/cobra"
 )
@@ -23,6 +24,8 @@ var cmdRun = &cobra.Command{
 	Use:   "run",
 	Short: "run server of syncbyte-engine",
 	Run: func(cmd *cobra.Command, args []string) {
+		go scheduler.Sch.Run()
+
 		srv := webapi.New()
 
 		if err := srv.Run(); err != nil {
@@ -33,7 +36,7 @@ var cmdRun = &cobra.Command{
 }
 
 func init() {
-	cobra.OnInitialize(options.InitConfig, repository.InitDB)
+	cobra.OnInitialize(options.InitConfig, repository.InitDB, scheduler.InitScheduler)
 	cmdRoot.PersistentFlags().StringVarP(&options.CfgFile, "config", "c", "", "config file (default is $HOME/.syncbyte-engine.yaml)")
 
 	cmdRoot.AddCommand(cmdRun)
