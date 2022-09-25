@@ -39,6 +39,7 @@ type BackupPolicy struct {
 	Frequency    int
 	StartTime    types.LocalTime
 	EndTime      types.LocalTime
+	IsCompress   bool `gorm:"default:false"`
 }
 
 type BackupJob struct {
@@ -48,6 +49,7 @@ type BackupJob struct {
 	Status     types.JobStatus
 	ResourceID uint
 	BackendID  uint
+	PolicyID   uint
 }
 
 type BackupSet struct {
@@ -60,6 +62,7 @@ type BackupSet struct {
 	BackupTime  time.Time
 	ResourceID  uint
 	BackendID   uint
+	Retention   int
 }
 
 type RestoreJob struct {

@@ -27,7 +27,7 @@ func New(db *repository.Repository) *Backuper {
 	return &Backuper{db: db}
 }
 
-func (b *Backuper) createBackupJob(resourceID, backendID uint, datasetName string, isCompress bool) (backupJobID, backupSetID uint, err error) {
+func (b *Backuper) createBackupJob(policyID, resourceID, backendID uint, retention int, datasetName string, isCompress bool) (backupJobID, backupSetID uint, err error) {
 	tx := b.db.Begin()
 	defer func() {
 		if err != nil {
@@ -41,6 +41,7 @@ func (b *Backuper) createBackupJob(resourceID, backendID uint, datasetName strin
 		Status:     types.Running,
 		ResourceID: resourceID,
 		BackendID:  backendID,
+		PolicyID:   policyID,
 	}
 	if result := tx.Create(&bj); result.Error != nil {
 		err = result.Error
@@ -54,6 +55,7 @@ func (b *Backuper) createBackupJob(resourceID, backendID uint, datasetName strin
 		BackupTime:  bj.StartTime,
 		ResourceID:  resourceID,
 		BackendID:   backendID,
+		Retention:   retention,
 	}
 	if result := tx.Create(&bs); result.Error != nil {
 		err = result.Error
@@ -103,9 +105,15 @@ func (b *Backuper) successBackupJob(bjID, bsID uint, size int64) (err error) {
 	return
 }
 
-func (b *Backuper) StartBackup(resourceID uint, isCompress bool) (jobID, setID uint, err error) {
+func (b *Backuper) StartBackup(policyID uint) (jobID, setID uint, err error) {
+	pl := repository.BackupPolicy{}
+	if result := b.db.Where("id = ?", policyID).First(&pl); result.Error != nil {
+		err = result.Error
+		return
+	}
+
 	r := repository.DBResource{}
-	if result := b.db.First(&r, resourceID); result.Error != nil {
+	if result := b.db.First(&r, pl.ResourceID); result.Error != nil {
 		err = result.Error
 		return
 	}
@@ -118,7 +126,7 @@ func (b *Backuper) StartBackup(resourceID uint, isCompress bool) (jobID, setID u
 
 	datasetName := genDataSetName(r.Name)
 
-	if jobID, setID, err = b.createBackupJob(resourceID, s3.ID, datasetName, isCompress); err != nil {
+	if jobID, setID, err = b.createBackupJob(pl.ID, pl.ResourceID, s3.ID, pl.Retention, datasetName, pl.IsCompress); err != nil {
 		log.Printf("create backup job failed, error: %v", err)
 		return
 	}
@@ -142,7 +150,7 @@ func (b *Backuper) StartBackup(resourceID uint, isCompress bool) (jobID, setID u
 	}
 
 	log.Println("start backup to backgroupd")
-	go b.startBackup(jobID, setID, datasetName, isCompress, &sourceOpts, &backendOpts)
+	go b.startBackup(jobID, setID, datasetName, pl.IsCompress, &sourceOpts, &backendOpts)
 
 	return
 }

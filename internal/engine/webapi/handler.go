@@ -25,7 +25,7 @@ func (h *Handler) StartBackup(c *gin.Context) {
 	}
 
 	backuper := backup.New(repository.Db)
-	jobID, setID, err := backuper.StartBackup(req.ResourceID, req.IsCompress)
+	jobID, setID, err := backuper.StartBackup(req.BackupPolicyID)
 	if err != nil {
 		schema.Response(c, nil, err)
 		return
@@ -141,6 +141,7 @@ func addBackupResource(req *schema.AddSourceRequest) (resourceID uint, err error
 		Frequency:    bp.Frequency,
 		StartTime:    bp.StartTime,
 		EndTime:      bp.EndTime,
+		IsCompress:   bp.IsCompress,
 	}
 
 	if result := repository.Db.Create(&backupPolicy); result.Error != nil {

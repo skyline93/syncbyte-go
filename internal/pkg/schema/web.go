@@ -52,11 +52,12 @@ type AddS3BackendResponse struct {
 
 type BackupPolicyItem struct {
 	Retention    int                      `json:"retention"`
-	ScheduleType types.BackupScheduleType `json:"schedule_type"`
+	ScheduleType types.BackupScheduleType `json:"scheduleType"`
 	Cron         string                   `json:"cron"`
 	Frequency    int                      `json:"frequency"`
-	StartTime    types.LocalTime          `json:"start_time"`
-	EndTime      types.LocalTime          `json:"end_time"`
+	StartTime    types.LocalTime          `json:"startTime"`
+	EndTime      types.LocalTime          `json:"endTime"`
+	IsCompress   bool                     `json:"isCompress"`
 }
 
 type AddSourceRequest struct {
@@ -68,8 +69,8 @@ type AddSourceRequest struct {
 	DbName       string           `json:"dbname"`
 	Extend       string           `json:"extend"`
 	Version      string           `json:"version"`
-	DbType       types.DBType     `json:"type"`
-	BackupPolicy BackupPolicyItem `json:"backup_policy"`
+	DbType       types.DBType     `json:"dbType"`
+	BackupPolicy BackupPolicyItem `json:"backupPolicy"`
 }
 
 type AddSourceResponse struct {
@@ -77,13 +78,12 @@ type AddSourceResponse struct {
 }
 
 type StartBackupRequest struct {
-	ResourceID uint `json:"resource_id"`
-	IsCompress bool `json:"is_compress"`
+	BackupPolicyID uint `json:"backupPolicyID"`
 }
 
 type StartBackupResponse struct {
-	BackupJobID uint `json:"backup_job_id" mapstructure:"backup_job_id"`
-	BackupSetID uint `json:"backup_set_id" mapstructure:"backup_set_id"`
+	BackupJobID uint `json:"backupJobID" mapstructure:"backupJobID"`
+	BackupSetID uint `json:"backupSetID" mapstructure:"backupSetID"`
 }
 
 type StartRestoreRequest struct {
