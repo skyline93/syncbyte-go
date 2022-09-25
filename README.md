@@ -1,6 +1,6 @@
 # SyncByte
 
-SyncByte is a backup tool to protect your databases or file
+SyncByte is a backup tool
 
 ## Prerequisites
 
