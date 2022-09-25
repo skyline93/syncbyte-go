@@ -23,11 +23,7 @@ type ApplyOptions struct {
 	FileName string
 }
 
-var (
-	applyOptions ApplyOptions
-	s3Backend    S3Backend
-	source       Source
-)
+var applyOptions ApplyOptions
 
 func init() {
 	cmdRoot.AddCommand(cmdApply)
@@ -54,7 +50,7 @@ func loadOptionsAndRunFromFile(file string) error {
 				continue
 			}
 
-			if err := addS3Backend(&s3Backend); err != nil {
+			if err := addS3Backend(&v); err != nil {
 				log.Printf("add s3 backend failed, error: %v", err)
 				os.Exit(1)
 			}
@@ -67,7 +63,7 @@ func loadOptionsAndRunFromFile(file string) error {
 				continue
 			}
 
-			if err := addSource(&source); err != nil {
+			if err := addSource(&v); err != nil {
 				log.Printf("add backup source failed, error: %v", err)
 				os.Exit(1)
 			}
@@ -84,27 +80,47 @@ func loadOptionsAndRunFromFile(file string) error {
 				os.Exit(1)
 			}
 		}
+	case types.Agent:
+		for _, i := range opts.Spec {
+			v := Agent{}
+			if err := mapstructure.Decode(i, &v); err != nil {
+				fmt.Printf("err: %v", err)
+				continue
+			}
+
+			if err := addAgent(&v); err != nil {
+				log.Printf("add agent failed, error: %v", err)
+				os.Exit(1)
+			}
+		}
 	}
 
 	return nil
 }
 
 func addS3Backend(s3 *S3Backend) error {
-	resp, err := client.R().SetBody(s3).Post("backend")
+	_, err := client.R().SetBody(s3).Post("backend")
 	if err != nil {
 		return err
 	}
 
-	log.Printf("resp: %v", resp)
 	return nil
 }
 
 func addSource(source *Source) error {
-	resp, err := client.R().SetBody(source).Post("source")
+	_, err := client.R().SetBody(source).Post("source")
 	if err != nil {
 		return err
 	}
 
-	log.Printf("resp: %v", resp)
+	return nil
+}
+
+func addAgent(agent *Agent) error {
+	_, err := client.R().SetBody(agent).Post("agent")
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -66,6 +66,14 @@ var cmdListRestoreResources = &cobra.Command{
 	},
 }
 
+var cmdListAgent = &cobra.Command{
+	Use:   "agent",
+	Short: "show agent resource",
+	Run: func(cmd *cobra.Command, args []string) {
+		PrintAgents()
+	},
+}
+
 func init() {
 	cmdList.AddCommand(
 		cmdListBackends,
@@ -74,6 +82,7 @@ func init() {
 		cmdListBackupSets,
 		cmdListRestoreJobs,
 		cmdListRestoreResources,
+		cmdListAgent,
 	)
 
 	cmdRoot.AddCommand(cmdList)
@@ -260,6 +269,32 @@ func PrintRestoreResources() {
 			utils.BoolToStr(i.IsValid),
 			i.RestoreTime.Format("2006-01-02 15:04:05"),
 		}
+		rows = append(rows, row)
+	}
+
+	pterm.DefaultTable.WithHasHeader().WithData(rows).Render()
+	pterm.Println()
+}
+
+func PrintAgents() {
+	v, err := client.Get("agent")
+	if err != nil {
+		os.Exit(1)
+	}
+
+	var rows pterm.TableData
+	head := []string{"ID", "HostName", "HostType", "IP", "Port"}
+	rows = append(rows, head)
+
+	for _, item := range v.([]interface{}) {
+		i := Agent{}
+
+		if err := Decode(item, &i); err != nil {
+			log.Printf("decode body error")
+			os.Exit(1)
+		}
+
+		row := []string{utils.UintToStr(i.ID), i.HostName, i.HostType, i.IP, utils.IntToStr(i.Port)}
 		rows = append(rows, row)
 	}
 

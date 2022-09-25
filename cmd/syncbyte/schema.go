@@ -29,7 +29,15 @@ type Source struct {
 	DbName   string       `json:"dbname"`
 	Extend   string       `json:"extend"`
 	Version  string       `json:"version"`
-	DbType   types.DBType `json:"type"`
+	DbType   types.DBType `json:"dbType"`
+}
+
+type Agent struct {
+	ID       uint   `json:"id"`
+	IP       string `json:"ip"`
+	Port     int    `json:"port"`
+	HostName string `json:"hostName"`
+	HostType string `json:"hostType"`
 }
 
 type BackupJob struct {

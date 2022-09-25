@@ -38,6 +38,7 @@ const (
 	Backend SystemReSourceType = "backend"
 	Source  SystemReSourceType = "source"
 	Restore SystemReSourceType = "restore"
+	Agent   SystemReSourceType = "agent"
 )
 
 type BackupScheduleType string
