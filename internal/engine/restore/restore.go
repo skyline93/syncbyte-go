@@ -1,16 +1,14 @@
 package restore
 
 import (
-	"context"
+	"fmt"
 	"log"
 	"time"
 
+	"github.com/skyline93/syncbyte-go/internal/engine/agent"
 	"github.com/skyline93/syncbyte-go/internal/engine/options"
 	"github.com/skyline93/syncbyte-go/internal/engine/repository"
 	"github.com/skyline93/syncbyte-go/internal/pkg/types"
-	pb "github.com/skyline93/syncbyte-go/internal/proto"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 type Restorer struct {
@@ -101,9 +99,15 @@ func (r *Restorer) successRestoreJob(rjID, destResourceID uint) (err error) {
 	return
 }
 
-func (r *Restorer) StartRestore(backupSetID uint, destOpts *options.DestOptions) (rjID, destResourceID uint, err error) {
+func (r *Restorer) StartRestore(backupSetID, agentID uint, destOpts *options.DestOptions) (rjID, destResourceID uint, err error) {
 	backupSet := &repository.BackupSet{}
 	if result := r.db.Where("id = ?", backupSetID).First(backupSet); result.Error != nil {
+		err = result.Error
+		return
+	}
+
+	ag := repository.Agent{}
+	if result := r.db.Where("id = ?", agentID).First(&ag); result.Error != nil {
 		err = result.Error
 		return
 	}
@@ -126,43 +130,23 @@ func (r *Restorer) StartRestore(backupSetID uint, destOpts *options.DestOptions)
 		return
 	}
 
-	go r.startRestore(rjID, destResourceID, backupSet.DataSetName, backupSet.IsCompress, destOpts, &backendOpts)
+	agentAddr := fmt.Sprintf("%s:%d", ag.IP, ag.Port)
+	go r.startRestore(rjID, destResourceID, agentAddr, backupSet.DataSetName, backupSet.IsCompress, destOpts, &backendOpts)
 
 	return
 }
 
-func (r *Restorer) startRestore(jobID, destResourceID uint, datasetName string, isUnCompress bool, destOpts *options.DestOptions, bakOpts *options.BackendOption) (err error) {
-	conn, err := grpc.Dial("127.0.0.1:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+func (r *Restorer) startRestore(jobID, destResourceID uint, agentAddr string, datasetName string, isUnCompress bool, destOpts *options.DestOptions, bakOpts *options.BackendOption) (err error) {
+	agent, err := agent.New(agentAddr)
 	if err != nil {
-		log.Printf("connect grpc server failed, error: %v", err)
 		return err
 	}
-	defer conn.Close()
+	defer agent.Close()
 
-	client := pb.NewAgentClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60*60*2)
-	defer cancel()
-
-	rep, err := client.StartRestore(ctx, &pb.RestoreRequest{
-		Datasetname:  datasetName,
-		Isuncompress: isUnCompress,
-		DestOpts: &pb.DestOptions{
-			Name:     destOpts.Name,
-			Server:   destOpts.Server,
-			User:     destOpts.User,
-			Password: destOpts.Password,
-			Dbname:   destOpts.DBName,
-			Version:  destOpts.Version,
-			Dbtype:   string(destOpts.DBType),
-			Port:     int32(destOpts.Port),
-		},
-		BackendOpts: &pb.BackendOptions{
-			Endpoint:  bakOpts.EndPoint,
-			Accesskey: bakOpts.AccessKey,
-			Secretkey: bakOpts.SecretKey,
-			Bucket:    bakOpts.Bucket,
-		},
-	})
+	rep, err := agent.StartRestore(datasetName, isUnCompress, destOpts, bakOpts)
+	if err != nil {
+		return err
+	}
 
 	log.Printf("start restore job to agent, jobID: %v", rep)
 
@@ -173,14 +157,14 @@ func (r *Restorer) startRestore(jobID, destResourceID uint, datasetName string, 
 
 	for {
 		time.Sleep(time.Second * 5)
-		rep, err := client.GetJobStatus(ctx, &pb.GetJobRequest{Jobid: rep.Jobid})
+		result, err := agent.GetJobStatus(rep.Jobid)
 		if err != nil {
 			log.Printf("get job status error, %v", err)
 			return err
 		}
 
-		log.Printf("client job status: %v", rep.Status)
-		switch rep.Status {
+		log.Printf("client job status: %v", result.Status)
+		switch result.Status {
 		case string(types.Successed):
 			r.successRestoreJob(jobID, destResourceID)
 		case string(types.Failed):

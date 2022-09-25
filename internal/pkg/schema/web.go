@@ -88,9 +88,10 @@ type StartBackupResponse struct {
 }
 
 type StartRestoreRequest struct {
-	BackupSetID uint         `json:"backup_set_id"`
+	BackupSetID uint         `json:"backupSetID"`
+	AgentID     uint         `json:"agentID"`
 	Name        string       `json:"name"`
-	DBType      types.DBType `json:"db_type"`
+	DBType      types.DBType `json:"dbType"`
 	Version     string       `json:"version"`
 	Server      string       `json:"server"`
 	Port        int          `json:"port"`
@@ -100,8 +101,8 @@ type StartRestoreRequest struct {
 }
 
 type StartRestoreResponse struct {
-	RestoreJobID      uint `json:"restore_job_id" mapstructure:"restore_job_id"`
-	RestoreResourceID uint `json:"restore_resource_id" mapstructure:"restore_resource_id"`
+	RestoreJobID      uint `json:"restoreJobID" mapstructure:"restoreJobID"`
+	RestoreResourceID uint `json:"restoreResourceID" mapstructure:"restoreResourceID"`
 }
 
 type AddAgentRequest struct {

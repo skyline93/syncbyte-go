@@ -65,3 +65,26 @@ func (a *Agent) StartBackup(datasetName string, isCompress bool, srcOpts *option
 func (a *Agent) GetJobStatus(jobID string) (*pb.GetJobResponse, error) {
 	return a.client.GetJobStatus(a.context, &pb.GetJobRequest{Jobid: jobID})
 }
+
+func (a *Agent) StartRestore(datasetName string, isUnCompress bool, destOpts *options.DestOptions, bakOpts *options.BackendOption) (*pb.RestoreResponse, error) {
+	return a.client.StartRestore(a.context, &pb.RestoreRequest{
+		Datasetname:  datasetName,
+		Isuncompress: isUnCompress,
+		DestOpts: &pb.DestOptions{
+			Name:     destOpts.Name,
+			Server:   destOpts.Server,
+			User:     destOpts.User,
+			Password: destOpts.Password,
+			Dbname:   destOpts.DBName,
+			Version:  destOpts.Version,
+			Dbtype:   string(destOpts.DBType),
+			Port:     int32(destOpts.Port),
+		},
+		BackendOpts: &pb.BackendOptions{
+			Endpoint:  bakOpts.EndPoint,
+			Accesskey: bakOpts.AccessKey,
+			Secretkey: bakOpts.SecretKey,
+			Bucket:    bakOpts.Bucket,
+		},
+	})
+}

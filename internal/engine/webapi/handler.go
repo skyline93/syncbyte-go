@@ -45,6 +45,7 @@ func (h *Handler) StartRestore(c *gin.Context) {
 	restorer := restore.New(repository.Db)
 	rjID, resID, err := restorer.StartRestore(
 		req.BackupSetID,
+		req.AgentID,
 		&options.DestOptions{
 			Name:     req.Name,
 			Server:   req.Server,
