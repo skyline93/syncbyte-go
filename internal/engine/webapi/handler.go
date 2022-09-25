@@ -90,6 +90,30 @@ func (h *Handler) AddS3Backend(c *gin.Context) {
 	schema.Response(c, s3.ID, nil)
 }
 
+func (h *Handler) AddAgent(c *gin.Context) {
+	req := schema.AddAgentRequest{}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		schema.Response(c, nil, err)
+		return
+	}
+
+	agent := repository.Agent{
+		IP:       req.IP,
+		Port:     req.Port,
+		HostName: req.HostName,
+		HostType: req.HostType,
+	}
+
+	result := repository.Db.Create(&agent)
+	if result.Error != nil {
+		schema.Response(c, nil, result.Error)
+		return
+	}
+
+	schema.Response(c, agent.ID, nil)
+}
+
 func (h *Handler) AddDBResource(c *gin.Context) {
 	req := schema.AddSourceRequest{}
 
@@ -209,4 +233,14 @@ func (h *Handler) ListRestoreResources(c *gin.Context) {
 	}
 
 	schema.Response(c, restoreResources, nil)
+}
+
+func (h *Handler) ListAgents(c *gin.Context) {
+	var agents []repository.Agent
+	if result := repository.Db.Find(&agents); result.Error != nil {
+		schema.Response(c, nil, result.Error)
+		return
+	}
+
+	schema.Response(c, agents, nil)
 }

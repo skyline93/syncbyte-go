@@ -102,3 +102,14 @@ type StartRestoreResponse struct {
 	RestoreJobID      uint `json:"restore_job_id" mapstructure:"restore_job_id"`
 	RestoreResourceID uint `json:"restore_resource_id" mapstructure:"restore_resource_id"`
 }
+
+type AddAgentRequest struct {
+	IP       string `json:"ip"`
+	Port     int    `json:"port"`
+	HostName string `json:"hostName"`
+	HostType string `json:"hostType"`
+}
+
+type AddAgentResponse struct {
+	AgentID uint `json:"agentID"`
+}

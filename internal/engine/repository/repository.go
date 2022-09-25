@@ -23,6 +23,7 @@ func InitDB() {
 		&RestoreJob{},
 		&RestoreDBResource{},
 		&BackupPolicy{},
+		&Agent{},
 	); err != nil {
 		panic(err)
 	}

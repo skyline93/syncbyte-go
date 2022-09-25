@@ -88,3 +88,11 @@ type RestoreDBResource struct {
 	IsValid      bool `gorm:"default:false"`
 	RestoreTime  time.Time
 }
+
+type Agent struct {
+	gorm.Model
+	IP       string
+	Port     int
+	HostName string
+	HostType string
+}

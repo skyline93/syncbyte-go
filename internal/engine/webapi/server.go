@@ -56,6 +56,10 @@ func (s *Server) initRouter() {
 	sourceGv1 := v1.Group("/source")
 	sourceGv1.POST("", h.AddDBResource)
 	sourceGv1.GET("", h.ListResources)
+
+	agentGv1 := v1.Group("/agent")
+	agentGv1.POST("", h.AddAgent)
+	agentGv1.GET("", h.ListAgents)
 }
 
 func (s *Server) initLogger() error {
