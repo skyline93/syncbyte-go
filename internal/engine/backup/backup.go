@@ -1,17 +1,14 @@
 package backup
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"time"
 
+	"github.com/skyline93/syncbyte-go/internal/engine/agent"
 	"github.com/skyline93/syncbyte-go/internal/engine/options"
 	"github.com/skyline93/syncbyte-go/internal/engine/repository"
 	"github.com/skyline93/syncbyte-go/internal/pkg/types"
-	pb "github.com/skyline93/syncbyte-go/internal/proto"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 func genDataSetName(sourceName string) string {
@@ -124,6 +121,12 @@ func (b *Backuper) StartBackup(policyID uint) (jobID, setID uint, err error) {
 		return
 	}
 
+	ag := repository.Agent{}
+	if result := b.db.Where("id = ?", pl.AgentID).First(&ag); result.Error != nil {
+		err = result.Error
+		return
+	}
+
 	datasetName := genDataSetName(r.Name)
 
 	if jobID, setID, err = b.createBackupJob(pl.ID, pl.ResourceID, s3.ID, pl.Retention, datasetName, pl.IsCompress); err != nil {
@@ -150,43 +153,24 @@ func (b *Backuper) StartBackup(policyID uint) (jobID, setID uint, err error) {
 	}
 
 	log.Println("start backup to backgroupd")
-	go b.startBackup(jobID, setID, datasetName, pl.IsCompress, &sourceOpts, &backendOpts)
+
+	agentAddr := fmt.Sprintf("%s:%d", ag.IP, ag.Port)
+	go b.startBackup(jobID, setID, agentAddr, datasetName, pl.IsCompress, &sourceOpts, &backendOpts)
 
 	return
 }
 
-func (b *Backuper) startBackup(jobID, setID uint, datasetName string, isCompress bool, srcOpts *options.SourceOption, bakOpts *options.BackendOption) error {
-	conn, err := grpc.Dial("127.0.0.1:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+func (b *Backuper) startBackup(jobID, setID uint, agentAddr string, datasetName string, isCompress bool, srcOpts *options.SourceOption, bakOpts *options.BackendOption) error {
+	agent, err := agent.New(agentAddr)
 	if err != nil {
-		log.Printf("connect grpc server failed, error: %v", err)
 		return err
 	}
-	defer conn.Close()
+	defer agent.Close()
 
-	client := pb.NewAgentClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60*60*2)
-	defer cancel()
-
-	rep, err := client.StartBackup(ctx, &pb.BackupRequest{
-		Datasetname: datasetName,
-		Iscompress:  isCompress,
-		SourceOpts: &pb.SourceOptions{
-			Name:     srcOpts.Name,
-			Server:   srcOpts.Server,
-			User:     srcOpts.User,
-			Password: srcOpts.Password,
-			Dbname:   srcOpts.DbName,
-			Version:  srcOpts.Version,
-			Dbtype:   string(srcOpts.DbType),
-			Port:     int32(srcOpts.Port),
-		},
-		BackendOpts: &pb.BackendOptions{
-			Endpoint:  bakOpts.EndPoint,
-			Accesskey: bakOpts.AccessKey,
-			Secretkey: bakOpts.SecretKey,
-			Bucket:    bakOpts.Bucket,
-		},
-	})
+	rep, err := agent.StartBackup(datasetName, isCompress, srcOpts, bakOpts)
+	if err != nil {
+		return err
+	}
 
 	log.Printf("start backup job to agent, jobID: %v", rep)
 
@@ -197,14 +181,14 @@ func (b *Backuper) startBackup(jobID, setID uint, datasetName string, isCompress
 
 	for {
 		time.Sleep(time.Second * 5)
-		rep, err := client.GetJobStatus(ctx, &pb.GetJobRequest{Jobid: rep.Jobid})
+		result, err := agent.GetJobStatus(rep.Jobid)
 		if err != nil {
 			log.Printf("get job status error, %v", err)
 			return err
 		}
 
-		log.Printf("client job status: %v", rep.Status)
-		switch rep.Status {
+		log.Printf("client job status: %v", result.Status)
+		switch result.Status {
 		case string(types.Successed):
 			b.successBackupJob(jobID, setID, 0)
 		case string(types.Failed):

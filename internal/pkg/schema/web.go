@@ -58,6 +58,7 @@ type BackupPolicyItem struct {
 	StartTime    types.LocalTime          `json:"startTime"`
 	EndTime      types.LocalTime          `json:"endTime"`
 	IsCompress   bool                     `json:"isCompress"`
+	AgentID      uint                     `json:"agentID"`
 }
 
 type AddSourceRequest struct {

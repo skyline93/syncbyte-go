@@ -40,6 +40,7 @@ type BackupPolicy struct {
 	StartTime    types.LocalTime
 	EndTime      types.LocalTime
 	IsCompress   bool `gorm:"default:false"`
+	AgentID      uint
 }
 
 type BackupJob struct {

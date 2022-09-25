@@ -166,6 +166,7 @@ func addBackupResource(req *schema.AddSourceRequest) (resourceID uint, err error
 		StartTime:    bp.StartTime,
 		EndTime:      bp.EndTime,
 		IsCompress:   bp.IsCompress,
+		AgentID:      bp.AgentID,
 	}
 
 	if result := repository.Db.Create(&backupPolicy); result.Error != nil {
