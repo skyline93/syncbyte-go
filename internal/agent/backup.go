@@ -20,7 +20,7 @@ func cleanFile(abs string) error {
 	}
 
 	log.Printf("remove dest file %s", abs)
-	if err := os.Remove(abs); err != nil {
+	if err := os.RemoveAll(abs); err != nil {
 		log.Printf("remove dest file err: %v", err)
 		return err
 	}
@@ -54,7 +54,16 @@ func NewBackupJob(source source.Source, backend backend.Backend, mountPoint stri
 }
 
 func (b *BackupJob) destFile() string {
-	return filepath.Join(b.MountPoint, b.DataSetName)
+	return filepath.Join(b.destDir(), b.DataSetName)
+}
+
+func (b *BackupJob) destDir() string {
+	dir := filepath.Join(b.MountPoint, b.JobID)
+	if _, err := os.Stat(dir); err != nil && os.IsNotExist(err) {
+		os.MkdirAll(dir, 0766)
+	}
+
+	return dir
 }
 
 func (b *BackupJob) Run() (err error) {
@@ -89,7 +98,7 @@ func (b *BackupJob) Run() (err error) {
 			return err
 		}
 	}
-	defer cleanFile(dumpFile)
+	defer cleanFile(b.destDir())
 
 	log.Printf("put file %s", dumpFile)
 	size, err = b.Backend.Put(dumpFile)
