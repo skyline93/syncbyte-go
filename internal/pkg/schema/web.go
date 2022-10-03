@@ -51,14 +51,14 @@ type AddS3BackendResponse struct {
 }
 
 type BackupPolicyItem struct {
-	Retention    int                      `json:"retention"`
-	ScheduleType types.BackupScheduleType `json:"scheduleType"`
-	Cron         string                   `json:"cron"`
-	Frequency    int                      `json:"frequency"`
-	StartTime    types.LocalTime          `json:"startTime"`
-	EndTime      types.LocalTime          `json:"endTime"`
-	IsCompress   bool                     `json:"isCompress"`
-	AgentID      uint                     `json:"agentID"`
+	Retention    int             `json:"retention"`
+	ScheduleType string          `json:"scheduleType"`
+	Cron         string          `json:"cron"`
+	Frequency    int             `json:"frequency"`
+	StartTime    types.LocalTime `json:"startTime"`
+	EndTime      types.LocalTime `json:"endTime"`
+	IsCompress   bool            `json:"isCompress"`
+	AgentID      uint            `json:"agentID"`
 }
 
 type AddSourceRequest struct {

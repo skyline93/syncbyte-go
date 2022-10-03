@@ -24,7 +24,7 @@ var cmdRun = &cobra.Command{
 	Use:   "run",
 	Short: "run server of syncbyte-engine",
 	Run: func(cmd *cobra.Command, args []string) {
-		go scheduler.Sch.Run()
+		// go scheduler.Sch.Start()
 
 		srv := webapi.New()
 

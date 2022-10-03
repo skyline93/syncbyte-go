@@ -9,3 +9,16 @@ SyncByte is a backup tool
 ## Usage
 
 TODO
+
+
+# SyncByte
+
+SyncByte is a backup tool
+
+## Prerequisites
+
+* MacOSX / Linux / Windows
+
+## Usage
+
+TODO

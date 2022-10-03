@@ -41,13 +41,6 @@ const (
 	Agent   SystemReSourceType = "agent"
 )
 
-type BackupScheduleType string
-
-const (
-	Cron     BackupScheduleType = "cron"
-	Interval BackupScheduleType = "interval"
-)
-
 const TimeFormat = "15:04:05"
 
 type LocalTime time.Time

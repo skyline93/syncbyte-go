@@ -20,14 +20,14 @@ type S3Backend struct {
 }
 
 type BackupPolicy struct {
-	Retention    int                      `json:"retention"`
-	ScheduleType types.BackupScheduleType `json:"scheduleType"`
-	Cron         string                   `json:"cron"`
-	Frequency    int                      `json:"frequency"`
-	StartTime    string                   `json:"startTime"`
-	EndTime      string                   `json:"endTime"`
-	IsCompress   bool                     `json:"isCompress"`
-	AgentID      uint                     `json:"agentID"`
+	Retention    int    `json:"retention"`
+	ScheduleType string `json:"scheduleType"`
+	Cron         string `json:"cron"`
+	Frequency    int    `json:"frequency"`
+	StartTime    string `json:"startTime"`
+	EndTime      string `json:"endTime"`
+	IsCompress   bool   `json:"isCompress"`
+	AgentID      uint   `json:"agentID"`
 }
 
 type Source struct {

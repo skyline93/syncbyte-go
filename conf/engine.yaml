@@ -2,9 +2,9 @@ listenAddr: ":8000"
 logPath: "/var/log/syncbyte"
 database:
   type: postgresql
-  host: 127.0.0.1
+  host: "127.0.0.1"
   port: 5432
   user: syncbyte
-  password: syncbyte
+  password: "123456"
   dbname: syncbyte
   extra: "sslmode=disable TimeZone=Asia/Shanghai"

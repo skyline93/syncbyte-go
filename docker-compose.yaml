@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  postgresql:
+    image: postgres:14.5
+    expose:
+      - 5432:5432
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=syncbyte
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=syncbyte
+    restart: always
+
+  minio:
+    image: minio/minio:latest
+    expose:
+      - 9000:9000
+      - 9001:9001
+    ports:
+      - 9000:9000
+      - 9001:9001
+    command:
+      - server
+      - /data
+      - --console-address
+      - ":9001"
+    restart: always
+
+  init-minio-bucket:
+    image: minio/mc
+    depends_on:
+      - minio
+    restart: on-failure
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add local http://minio:9000 minioadmin minioadmin;
+      /usr/bin/mc rm -r --force local/syncbyte-dev;
+      /usr/bin/mc mb local/syncbyte-dev;
+      /usr/bin/mc admin user add local accesskey123 secretkey123;
+      /usr/bin/mc admin policy set local readwrite user=accesskey123;
+      "

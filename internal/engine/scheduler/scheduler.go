@@ -1,12 +1,8 @@
 package scheduler
 
 import (
-	"log"
-
 	"github.com/robfig/cron/v3"
-	"github.com/skyline93/syncbyte-go/internal/engine/backup"
-	"github.com/skyline93/syncbyte-go/internal/engine/repository"
-	"github.com/skyline93/syncbyte-go/internal/pkg/types"
+	"log"
 )
 
 var Sch *Scheduler
@@ -19,73 +15,40 @@ func InitScheduler() {
 	}
 }
 
-type BackupScheduleJob struct {
-	BackupPolicyID uint
-}
-
-func NewBackupScheduleJob(policyID uint) *BackupScheduleJob {
-	return &BackupScheduleJob{
-		BackupPolicyID: policyID,
-	}
-}
-
-func (j BackupScheduleJob) Run() {
-	backuper := backup.New(repository.Db)
-	jobID, setID, err := backuper.StartBackup(j.BackupPolicyID)
-	if err != nil {
-		log.Printf("start backup job error, policy id <%d>", j.BackupPolicyID)
-		return
-	}
-
-	log.Printf("backup job <%d> is started, backup set is <%d>", jobID, setID)
+type Job interface {
+	Cron() string
+	Interval() int
+	ID() string
+	JobType() JobType
+	ScheduleType() ScheduleType
+	Run()
 }
 
 type Scheduler struct {
-	crons        *cron.Cron
-	entityIDChan chan int
+	crons   *cron.Cron
+	JobChan chan Job
 }
 
 func New() (*Scheduler, error) {
 	sch := &Scheduler{
-		crons: cron.New(),
-	}
-
-	if err := sch.initCronScheduler(); err != nil {
-		return nil, err
+		crons:   cron.New(),
+		JobChan: make(chan Job),
 	}
 
 	return sch, nil
 }
 
-func (s *Scheduler) initCronScheduler() (err error) {
-	var schs []repository.BackupPolicy
-	if result := repository.Db.Where("schedule_type = ?", types.Cron).Find(&schs); result.Error != nil {
-		err = result.Error
-		return
-	}
-
-	for _, sch := range schs {
-		cjob := NewBackupScheduleJob(sch.ID)
-
-		log.Printf("add cron job, <%d>(%s)", sch.ID, sch.Cron)
-		s.crons.AddJob(sch.Cron, cjob)
-	}
-
-	return nil
-}
-
-func (s *Scheduler) Run() {
+func (s *Scheduler) Start() {
 	s.crons.Start()
 
 	for {
 		select {
-		case entityID := <-s.entityIDChan:
-			// TODO
-			log.Printf("update cron, entityID: %v", entityID)
+		case job := <-s.JobChan:
+			switch job.ScheduleType() {
+			case Cron:
+				log.Printf("add cron job [%s]", job.ID())
+				s.crons.AddJob(job.Cron(), job)
+			}
 		}
 	}
-}
-
-func (s *Scheduler) Update() {
-	// TODO
 }

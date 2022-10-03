@@ -34,7 +34,7 @@ type BackupPolicy struct {
 	gorm.Model
 	ResourceID   uint
 	Retention    int
-	ScheduleType types.BackupScheduleType
+	ScheduleType string
 	Cron         string
 	Frequency    int
 	StartTime    types.LocalTime

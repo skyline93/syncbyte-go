@@ -10,7 +10,7 @@ var Db *Repository
 func InitDB() {
 	var err error
 
-	Db, err = New((*options.DatabaseOptions)(options.Opts.Database))
+	Db, err = New(&options.Opts.Database)
 	if err != nil {
 		panic(err)
 	}

@@ -18,9 +18,9 @@ var CfgFile string
 var Opts *Options
 
 type Options struct {
-	ListenAddr string           `json:"listenAddr" mapstructure:"listenAddr"`
-	LogPath    string           `json:"logPath" mapstructure:"logPath"`
-	Database   *DatabaseOptions `json:"database" mapstructure:"database"`
+	ListenAddr string          `json:"listenAddr" mapstructure:"listenAddr"`
+	LogPath    string          `json:"logPath" mapstructure:"logPath"`
+	Database   DatabaseOptions `json:"database" mapstructure:"database"`
 }
 
 type DatabaseOptions struct {
@@ -29,7 +29,7 @@ type DatabaseOptions struct {
 	Port     int          `json:"port" mapstructure:"port"`
 	User     string       `json:"user" mapstructure:"user"`
 	Password string       `json:"password" mapstructure:"password"`
-	DbName   string       `json:"db_name" mapstructure:"dbname"`
+	DbName   string       `json:"dbname" mapstructure:"dbname"`
 	Extra    string       `json:"extra" mapstructure:"extra"`
 }
 
