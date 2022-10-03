@@ -4,6 +4,16 @@ docker-image: clean syncbyte-engine syncbyte-agent syncbyte
 	docker rmi syncbyte:latest
 	docker build -t syncbyte:latest .
 
+rpm: clean syncbyte-engine syncbyte-agent syncbyte
+	rm -rf ~/rpmbuild
+
+	rpmbuild -bb deploy/agent.spec
+	rpmbuild -bb deploy/engine.spec
+	rpmbuild -bb deploy/syncbyte.spec
+
+	cp ~/rpmbuild/RPMS/x86_64/*.rpm output
+	rm -rf ~/rpmbuild
+
 syncbyte-engine:
 	CGO_ENABLED=0 go build -o output/syncbyte-engine cmd/engine/main.go
 

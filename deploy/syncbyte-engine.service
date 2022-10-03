@@ -1,0 +1,12 @@
+[Unit]
+Description=Syncbyte Engine Server
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/syncbyte-engine -c /etc/syncbyte/engine.yaml run
+ExecStop=/bin/kill -s HUP $MAINPID
+Restart=always
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
