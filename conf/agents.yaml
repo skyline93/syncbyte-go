@@ -2,5 +2,9 @@ kind: agent
 spec:
   - ip: 127.0.0.1
     port: 50051
-    hostName: "HOSTNAME"
+    hostName: "SyncbyteBackup"
     hostType: backup
+  - ip: 127.0.0.1
+    port: 50051
+    hostName: "SyncbyteRestore"
+    hostType: restore

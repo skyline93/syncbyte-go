@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/skyline93/syncbyte-go/internal/engine/backup"
 	"os"
 
 	"github.com/skyline93/syncbyte-go/internal/engine/options"
@@ -24,8 +25,6 @@ var cmdRun = &cobra.Command{
 	Use:   "run",
 	Short: "run server of syncbyte-engine",
 	Run: func(cmd *cobra.Command, args []string) {
-		// go scheduler.Sch.Start()
-
 		srv := webapi.New()
 
 		if err := srv.Run(); err != nil {
@@ -36,7 +35,7 @@ var cmdRun = &cobra.Command{
 }
 
 func init() {
-	cobra.OnInitialize(options.InitConfig, repository.InitDB, scheduler.InitScheduler)
+	cobra.OnInitialize(options.InitConfig, repository.InitDB, scheduler.InitScheduler, backup.InitBackupSchedule)
 	cmdRoot.PersistentFlags().StringVarP(&options.CfgFile, "config", "c", "", "config file (default is $HOME/.syncbyte-engine.yaml)")
 
 	cmdRoot.AddCommand(cmdRun)

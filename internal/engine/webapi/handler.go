@@ -1,6 +1,7 @@
 package webapi
 
 import (
+	"github.com/skyline93/syncbyte-go/internal/engine/scheduler"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -127,16 +128,19 @@ func (h *Handler) AddDBResource(c *gin.Context) {
 		return
 	}
 
-	resourceID, err := addBackupResource(&req)
+	resourceID, policyID, err := addBackupResource(&req)
 	if err != nil {
 		schema.Response(c, nil, err)
 		return
 	}
 
+	s := backup.NewSchedule(req.BackupPolicy.Cron, req.BackupPolicy.Frequency, policyID, scheduler.Cron)
+	scheduler.Sch.JobChan <- s
+
 	schema.Response(c, resourceID, nil)
 }
 
-func addBackupResource(req *schema.AddSourceRequest) (resourceID uint, err error) {
+func addBackupResource(req *schema.AddSourceRequest) (resourceID, policyID uint, err error) {
 	tx := repository.Db.Begin()
 	defer func() {
 		if err != nil {
@@ -158,7 +162,7 @@ func addBackupResource(req *schema.AddSourceRequest) (resourceID uint, err error
 	}
 
 	if result := repository.Db.Create(&dbResource); result.Error != nil {
-		return 0, result.Error
+		return 0, 0, result.Error
 	}
 
 	bp := req.BackupPolicy
@@ -175,10 +179,10 @@ func addBackupResource(req *schema.AddSourceRequest) (resourceID uint, err error
 	}
 
 	if result := repository.Db.Create(&backupPolicy); result.Error != nil {
-		return 0, result.Error
+		return 0, 0, result.Error
 	}
 
-	return dbResource.ID, nil
+	return dbResource.ID, backupPolicy.ID, nil
 }
 
 func (h *Handler) ListS3Backends(c *gin.Context) {

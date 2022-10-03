@@ -215,6 +215,16 @@ type Schedule struct {
 	id           uint
 }
 
+func NewSchedule(cron string, interval int, policyID uint, schType scheduler.ScheduleType) *Schedule {
+	return &Schedule{
+		jobType:      scheduler.Backup,
+		scheduleType: schType,
+		cron:         cron,
+		interval:     interval,
+		id:           policyID,
+	}
+}
+
 func (s *Schedule) Cron() string {
 	return s.cron
 }
@@ -257,13 +267,7 @@ func InitBackupSchedule() {
 	for _, sch := range schs {
 		log.Printf("add cron job, <%d>(%s)", sch.ID, sch.Cron)
 
-		s := &Schedule{
-			scheduleType: scheduler.ScheduleType(sch.ScheduleType),
-			cron:         sch.Cron,
-			interval:     sch.Frequency,
-			id:           sch.ID,
-		}
-
+		s := NewSchedule(sch.Cron, sch.Frequency, sch.ID, scheduler.Cron)
 		scheduler.Sch.JobChan <- s
 	}
 }
