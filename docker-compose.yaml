@@ -41,3 +41,33 @@ services:
       /usr/bin/mc admin user add local accesskey123 secretkey123;
       /usr/bin/mc admin policy set local readwrite user=accesskey123;
       "
+
+  agent:
+    image: syncbyte:latest
+    depends_on:
+      - postgresql
+      - minio
+      - init-minio-bucket
+    restart: on-failure
+    expose:
+      - 50051:50051
+    ports:
+      - 50051:50051
+    command:
+      - agent
+      - run
+
+  engine:
+    image: syncbyte:latest
+    depends_on:
+      - postgresql
+      - minio
+      - init-minio-bucket
+    restart: on-failure
+    expose:
+      - 8000:8000
+    ports:
+      - 8000:8000
+    command:
+      - engine
+      - run
