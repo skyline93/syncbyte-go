@@ -1,8 +1,9 @@
 package webapi
 
 import (
-	"github.com/skyline93/syncbyte-go/internal/engine/scheduler"
 	"log"
+
+	"github.com/skyline93/syncbyte-go/internal/engine/scheduler"
 
 	"github.com/gin-gonic/gin"
 	"github.com/skyline93/syncbyte-go/internal/engine/backup"
@@ -10,6 +11,7 @@ import (
 	"github.com/skyline93/syncbyte-go/internal/engine/repository"
 	"github.com/skyline93/syncbyte-go/internal/engine/restore"
 	"github.com/skyline93/syncbyte-go/internal/pkg/schema"
+	"github.com/skyline93/syncbyte-go/internal/pkg/utils"
 )
 
 type Handler struct {
@@ -197,7 +199,14 @@ func (h *Handler) ListS3Backends(c *gin.Context) {
 
 func (h *Handler) ListResources(c *gin.Context) {
 	var resources []repository.DBResource
-	if result := repository.Db.Find(&resources); result.Error != nil {
+
+	limit, err := utils.StrToInt(c.DefaultQuery("limit", "10"))
+	if err != nil {
+		schema.Response(c, nil, err)
+		return
+	}
+
+	if result := repository.Db.Order("id desc").Limit(limit).Find(&resources); result.Error != nil {
 		schema.Response(c, nil, result.Error)
 		return
 	}
@@ -207,7 +216,14 @@ func (h *Handler) ListResources(c *gin.Context) {
 
 func (h *Handler) ListBackupJobs(c *gin.Context) {
 	var backupJobs []repository.BackupJob
-	if result := repository.Db.Find(&backupJobs); result.Error != nil {
+
+	limit, err := utils.StrToInt(c.DefaultQuery("limit", "10"))
+	if err != nil {
+		schema.Response(c, nil, err)
+		return
+	}
+
+	if result := repository.Db.Order("start_time desc").Limit(limit).Find(&backupJobs); result.Error != nil {
 		schema.Response(c, nil, result.Error)
 		return
 	}
@@ -217,7 +233,14 @@ func (h *Handler) ListBackupJobs(c *gin.Context) {
 
 func (h *Handler) ListBackupSets(c *gin.Context) {
 	var backupSets []repository.BackupSet
-	if result := repository.Db.Find(&backupSets); result.Error != nil {
+
+	limit, err := utils.StrToInt(c.DefaultQuery("limit", "10"))
+	if err != nil {
+		schema.Response(c, nil, err)
+		return
+	}
+
+	if result := repository.Db.Order("backup_time desc").Limit(limit).Find(&backupSets); result.Error != nil {
 		schema.Response(c, nil, result.Error)
 		return
 	}
@@ -227,7 +250,14 @@ func (h *Handler) ListBackupSets(c *gin.Context) {
 
 func (h *Handler) ListRestoreJobs(c *gin.Context) {
 	var restoreJobs []repository.RestoreJob
-	if result := repository.Db.Find(&restoreJobs); result.Error != nil {
+
+	limit, err := utils.StrToInt(c.DefaultQuery("limit", "10"))
+	if err != nil {
+		schema.Response(c, nil, err)
+		return
+	}
+
+	if result := repository.Db.Order("start_time desc").Limit(limit).Find(&restoreJobs); result.Error != nil {
 		schema.Response(c, nil, result.Error)
 		return
 	}
@@ -237,7 +267,14 @@ func (h *Handler) ListRestoreJobs(c *gin.Context) {
 
 func (h *Handler) ListRestoreResources(c *gin.Context) {
 	var restoreResources []repository.RestoreDBResource
-	if result := repository.Db.Find(&restoreResources); result.Error != nil {
+
+	limit, err := utils.StrToInt(c.DefaultQuery("limit", "10"))
+	if err != nil {
+		schema.Response(c, nil, err)
+		return
+	}
+
+	if result := repository.Db.Order("restore_time desc").Limit(limit).Find(&restoreResources); result.Error != nil {
 		schema.Response(c, nil, result.Error)
 		return
 	}
