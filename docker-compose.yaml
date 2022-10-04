@@ -49,6 +49,10 @@ services:
       - minio
       - init-minio-bucket
     restart: on-failure
+    volumes:
+      - /home/greene/syncbyte-go/data/backup:/var/run/backup
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/local/bin/docker
     expose:
       - 50051:50051
     ports:

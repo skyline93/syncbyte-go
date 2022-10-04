@@ -1,7 +1,7 @@
 all: syncbyte-engine syncbyte-agent syncbyte
 
 docker-image: clean syncbyte-engine syncbyte-agent syncbyte
-	docker rmi syncbyte:latest
+	docker rmi -f syncbyte:latest
 	docker build -t syncbyte:latest .
 
 rpm: clean syncbyte-engine syncbyte-agent syncbyte
