@@ -15,9 +15,16 @@ const (
 type JobStatus string
 
 const (
+	Queued    JobStatus = "queued"
 	Running   JobStatus = "running"
 	Successed JobStatus = "successed"
 	Failed    JobStatus = "failed"
+)
+
+type ScheduledJobType string
+
+const (
+	Backup ScheduledJobType = "backup"
 )
 
 type BackendDataType string

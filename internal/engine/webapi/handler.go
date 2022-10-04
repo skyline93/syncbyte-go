@@ -3,8 +3,6 @@ package webapi
 import (
 	"log"
 
-	"github.com/skyline93/syncbyte-go/internal/engine/scheduler"
-
 	"github.com/gin-gonic/gin"
 	"github.com/skyline93/syncbyte-go/internal/engine/backup"
 	"github.com/skyline93/syncbyte-go/internal/engine/options"
@@ -12,6 +10,7 @@ import (
 	"github.com/skyline93/syncbyte-go/internal/engine/restore"
 	"github.com/skyline93/syncbyte-go/internal/pkg/schema"
 	"github.com/skyline93/syncbyte-go/internal/pkg/utils"
+	"gorm.io/gorm"
 )
 
 type Handler struct {
@@ -123,6 +122,7 @@ func (h *Handler) AddAgent(c *gin.Context) {
 }
 
 func (h *Handler) AddDBResource(c *gin.Context) {
+	var err error
 	req := schema.AddSourceRequest{}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -130,19 +130,6 @@ func (h *Handler) AddDBResource(c *gin.Context) {
 		return
 	}
 
-	resourceID, policyID, err := addBackupResource(&req)
-	if err != nil {
-		schema.Response(c, nil, err)
-		return
-	}
-
-	s := backup.NewSchedule(req.BackupPolicy.Cron, req.BackupPolicy.Frequency, policyID, scheduler.Cron)
-	scheduler.Sch.JobChan <- s
-
-	schema.Response(c, resourceID, nil)
-}
-
-func addBackupResource(req *schema.AddSourceRequest) (resourceID, policyID uint, err error) {
 	tx := repository.Db.Begin()
 	defer func() {
 		if err != nil {
@@ -151,6 +138,25 @@ func addBackupResource(req *schema.AddSourceRequest) (resourceID, policyID uint,
 		tx.Commit()
 	}()
 
+	resourceID, err := addBackupResource(tx, &req)
+	if err != nil {
+		schema.Response(c, nil, err)
+		return
+	}
+
+	_, err = backup.CreatePolicy(
+		tx, resourceID, req.BackupPolicy.AgentID, req.BackupPolicy.Retention, req.BackupPolicy.IsCompress,
+		req.BackupPolicy.ScheduleType, req.BackupPolicy.Cron, req.BackupPolicy.Frequency,
+	)
+	if err != nil {
+		schema.Response(c, nil, err)
+		return
+	}
+
+	schema.Response(c, resourceID, nil)
+}
+
+func addBackupResource(db *gorm.DB, req *schema.AddSourceRequest) (resourceID uint, err error) {
 	dbResource := repository.DBResource{
 		Name:     req.Name,
 		DBType:   req.DbType,
@@ -163,28 +169,11 @@ func addBackupResource(req *schema.AddSourceRequest) (resourceID, policyID uint,
 		Args:     req.Extend,
 	}
 
-	if result := repository.Db.Create(&dbResource); result.Error != nil {
-		return 0, 0, result.Error
+	if result := db.Create(&dbResource); result.Error != nil {
+		return 0, result.Error
 	}
 
-	bp := req.BackupPolicy
-	backupPolicy := repository.BackupPolicy{
-		ResourceID:   dbResource.ID,
-		Retention:    bp.Retention,
-		ScheduleType: bp.ScheduleType,
-		Cron:         bp.Cron,
-		Frequency:    bp.Frequency,
-		StartTime:    bp.StartTime,
-		EndTime:      bp.EndTime,
-		IsCompress:   bp.IsCompress,
-		AgentID:      bp.AgentID,
-	}
-
-	if result := repository.Db.Create(&backupPolicy); result.Error != nil {
-		return 0, 0, result.Error
-	}
-
-	return dbResource.ID, backupPolicy.ID, nil
+	return dbResource.ID, nil
 }
 
 func (h *Handler) ListS3Backends(c *gin.Context) {

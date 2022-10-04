@@ -8,7 +8,6 @@ import (
 	"github.com/skyline93/syncbyte-go/internal/engine/agent"
 	"github.com/skyline93/syncbyte-go/internal/engine/options"
 	"github.com/skyline93/syncbyte-go/internal/engine/repository"
-	"github.com/skyline93/syncbyte-go/internal/engine/scheduler"
 	"github.com/skyline93/syncbyte-go/internal/pkg/types"
 )
 
@@ -205,69 +204,4 @@ func (b *Backuper) startBackup(jobID, setID uint, agentAddr string, datasetName 
 
 	log.Printf("backup completed, %s", rep.Jobid)
 	return nil
-}
-
-type Schedule struct {
-	jobType      scheduler.JobType
-	scheduleType scheduler.ScheduleType
-	cron         string
-	interval     int
-	id           uint
-}
-
-func NewSchedule(cron string, interval int, policyID uint, schType scheduler.ScheduleType) *Schedule {
-	return &Schedule{
-		jobType:      scheduler.Backup,
-		scheduleType: schType,
-		cron:         cron,
-		interval:     interval,
-		id:           policyID,
-	}
-}
-
-func (s *Schedule) Cron() string {
-	return s.cron
-}
-
-func (s *Schedule) Interval() int {
-	return s.interval
-}
-
-func (s *Schedule) ID() string {
-	return fmt.Sprintf("%s-%s-%d", s.jobType, s.scheduleType, s.id)
-}
-
-func (s *Schedule) JobType() scheduler.JobType {
-	return s.jobType
-}
-
-func (s *Schedule) ScheduleType() scheduler.ScheduleType {
-	return s.scheduleType
-}
-
-func (s *Schedule) Run() {
-	backuper := New(repository.Db)
-	jobID, setID, err := backuper.StartBackup(s.id)
-	if err != nil {
-		log.Printf("start backup job error, policy id <%d>", s.id)
-		return
-	}
-
-	log.Printf("backup job <%d> is started, backup set is <%d>", jobID, setID)
-}
-
-func InitBackupSchedule() {
-	var schs []repository.BackupPolicy
-
-	if result := repository.Db.Where("schedule_type = ?", scheduler.Cron).Find(&schs); result.Error != nil {
-		log.Printf("init backup schedule err, msg: %v", result.Error)
-		return
-	}
-
-	for _, sch := range schs {
-		log.Printf("add cron job, <%d>(%s)", sch.ID, sch.Cron)
-
-		s := NewSchedule(sch.Cron, sch.Frequency, sch.ID, scheduler.Cron)
-		scheduler.Sch.JobChan <- s
-	}
 }

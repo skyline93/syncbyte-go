@@ -1,8 +1,10 @@
 package scheduler
 
 import (
-	"github.com/robfig/cron/v3"
 	"log"
+	"sync"
+
+	"github.com/robfig/cron/v3"
 )
 
 var Sch *Scheduler
@@ -17,26 +19,30 @@ func InitScheduler() {
 	go Sch.Start()
 }
 
-type Job interface {
-	Cron() string
-	Interval() int
-	ID() string
-	JobType() JobType
-	ScheduleType() ScheduleType
-	Run()
+type CronJob interface {
+	cron.Job
+
+	GetID() string
+	GetCron() string
 }
 
 type Scheduler struct {
-	crons   *cron.Cron
-	JobChan chan Job
-	jobs    map[string]cron.EntryID
+	crons *cron.Cron
+
+	sync.RWMutex
+	jobs map[string]cron.EntryID
+
+	BackupScheduleChan chan CronJob
+	UnloadJobIDChan    chan string
 }
 
 func New() (*Scheduler, error) {
 	sch := &Scheduler{
-		crons:   cron.New(),
-		JobChan: make(chan Job),
-		jobs:    make(map[string]cron.EntryID),
+		crons: cron.New(),
+		jobs:  make(map[string]cron.EntryID),
+
+		BackupScheduleChan: make(chan CronJob),
+		UnloadJobIDChan:    make(chan string),
 	}
 
 	return sch, nil
@@ -48,15 +54,29 @@ func (s *Scheduler) Start() {
 
 	for {
 		select {
-		case job := <-s.JobChan:
-			log.Printf("rev job %s", job.ID())
-			switch job.ScheduleType() {
-			case Cron:
-				log.Printf("add cron job [%s]", job.ID())
-				if entryID, err := s.crons.AddJob(job.Cron(), job); err != nil {
-					s.jobs[job.ID()] = entryID
-				}
+		case j := <-s.BackupScheduleChan:
+			log.Printf("rev backup schedule job, id: %s", j.GetID())
+
+			entryID, err := s.crons.AddJob(j.GetCron(), j)
+			if err != nil {
+				log.Printf("add cron job err, msg: %v", err)
+				continue
 			}
+
+			s.Lock()
+			s.jobs[j.GetID()] = entryID
+			s.Unlock()
+
+		case id := <-s.UnloadJobIDChan:
+			s.RLock()
+			entryID := s.jobs[id]
+			s.RUnlock()
+
+			s.Lock()
+			s.crons.Remove(entryID)
+			delete(s.jobs, id)
+			log.Printf("unload cron job, %s", id)
+			s.Unlock()
 		}
 	}
 }
