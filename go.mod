@@ -12,7 +12,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.46
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/skyline93/gokv v0.0.0-20220921131834-c52ed26cffbc
+	github.com/skyline93/gokv v0.1.1
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.13.0
 	google.golang.org/grpc v1.46.2

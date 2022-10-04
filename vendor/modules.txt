@@ -204,7 +204,7 @@ github.com/satori/go.uuid
 # github.com/sirupsen/logrus v1.9.0
 ## explicit; go 1.13
 github.com/sirupsen/logrus
-# github.com/skyline93/gokv v0.0.0-20220921131834-c52ed26cffbc
+# github.com/skyline93/gokv v0.1.1
 ## explicit; go 1.18
 github.com/skyline93/gokv
 # github.com/spf13/afero v1.8.2
