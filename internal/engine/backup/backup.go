@@ -155,7 +155,7 @@ func (b *Backuper) StartBackup(policyID uint) (jobID, setID uint, err error) {
 	log.Println("start backup to backgroupd")
 
 	agentAddr := fmt.Sprintf("%s:%d", ag.IP, ag.Port)
-	go b.startBackup(jobID, setID, agentAddr, datasetName, pl.IsCompress, &sourceOpts, &backendOpts)
+	b.startBackup(jobID, setID, agentAddr, datasetName, pl.IsCompress, &sourceOpts, &backendOpts)
 
 	return
 }

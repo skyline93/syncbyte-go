@@ -97,6 +97,14 @@ type RestoreDBResource struct {
 	RestoreTime  time.Time    `json:"restore_time"`
 }
 
+type SetPoolSize struct {
+	Size int `json:"size"`
+}
+
+type PoolWorkerItem struct {
+	WorkerID string `mapstructure:"worker_id"`
+}
+
 type SystemResource struct {
 	Kind types.SystemReSourceType `yaml:"kind"`
 	Spec []map[string]interface{} `yaml:"spec"`

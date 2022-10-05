@@ -64,6 +64,10 @@ func (s *Server) initRouter() {
 	policyGv1 := v1.Group("/policy")
 	policyGv1.POST("/enable", h.EnableBackupScheduler)
 	policyGv1.POST("/disable", h.DisableBackupScheduler)
+
+	manageGv1 := v1.Group("/manage")
+	manageGv1.POST("/pool", h.SetPoolSize)
+	manageGv1.GET("/pool", h.ListPoolWorker)
 }
 
 func (s *Server) initLogger() error {

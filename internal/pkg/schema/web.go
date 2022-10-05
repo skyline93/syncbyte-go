@@ -115,3 +115,11 @@ type AddAgentRequest struct {
 type AddAgentResponse struct {
 	AgentID uint `json:"agentID"`
 }
+
+type SetPoolSizeRequest struct {
+	Size int `json:"size"`
+}
+
+type PoolWorkerItem struct {
+	WorkerID string `json:"worker_id"`
+}

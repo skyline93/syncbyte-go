@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/skyline93/syncbyte-go/internal/engine/backup"
 	"github.com/skyline93/syncbyte-go/internal/engine/options"
+	"github.com/skyline93/syncbyte-go/internal/engine/policy"
 	"github.com/skyline93/syncbyte-go/internal/engine/repository"
 	"github.com/skyline93/syncbyte-go/internal/engine/scheduler"
 	"github.com/skyline93/syncbyte-go/internal/engine/webapi"
+	"github.com/skyline93/syncbyte-go/internal/pkg/worker"
 	"github.com/spf13/cobra"
 )
 
@@ -35,7 +36,14 @@ var cmdRun = &cobra.Command{
 }
 
 func init() {
-	cobra.OnInitialize(options.InitConfig, repository.InitDB, scheduler.InitScheduler, backup.LoadSchedulers)
+	cobra.OnInitialize(
+		options.InitConfig,
+		repository.InitDB,
+		scheduler.InitScheduler,
+		policy.LoadSchedulers,
+		worker.InitWorkPool,
+		scheduler.DoScheduledJob,
+	)
 	cmdRoot.PersistentFlags().StringVarP(&options.CfgFile, "config", "c", "", "config file (default is $HOME/.syncbyte-engine.yaml)")
 
 	cmdRoot.AddCommand(cmdRun)

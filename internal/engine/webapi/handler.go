@@ -6,10 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/skyline93/syncbyte-go/internal/engine/backup"
 	"github.com/skyline93/syncbyte-go/internal/engine/options"
+	"github.com/skyline93/syncbyte-go/internal/engine/policy"
 	"github.com/skyline93/syncbyte-go/internal/engine/repository"
 	"github.com/skyline93/syncbyte-go/internal/engine/restore"
 	"github.com/skyline93/syncbyte-go/internal/pkg/schema"
 	"github.com/skyline93/syncbyte-go/internal/pkg/utils"
+	"github.com/skyline93/syncbyte-go/internal/pkg/worker"
 	"gorm.io/gorm"
 )
 
@@ -29,13 +31,9 @@ func (h *Handler) StartBackup(c *gin.Context) {
 	}
 
 	backuper := backup.New(repository.Db)
-	jobID, setID, err := backuper.StartBackup(req.BackupPolicyID)
-	if err != nil {
-		schema.Response(c, nil, err)
-		return
-	}
+	go backuper.StartBackup(req.BackupPolicyID)
 
-	schema.Response(c, &schema.StartBackupResponse{BackupJobID: jobID, BackupSetID: setID}, nil)
+	schema.Response(c, nil, nil)
 }
 
 func (h *Handler) StartRestore(c *gin.Context) {
@@ -144,7 +142,7 @@ func (h *Handler) AddDBResource(c *gin.Context) {
 		return
 	}
 
-	_, err = backup.CreatePolicy(
+	_, err = policy.CreatePolicy(
 		tx, resourceID, req.BackupPolicy.AgentID, req.BackupPolicy.Retention, req.BackupPolicy.IsCompress,
 		req.BackupPolicy.ScheduleType, req.BackupPolicy.Cron, req.BackupPolicy.Frequency,
 	)
@@ -298,7 +296,7 @@ func (h *Handler) EnableBackupScheduler(c *gin.Context) {
 		tx.Commit()
 	}()
 
-	pls, err := backup.GetPolicies(tx, req)
+	pls, err := policy.GetPolicies(tx, req)
 	if err != nil {
 		schema.Response(c, nil, err)
 		return
@@ -332,7 +330,7 @@ func (h *Handler) DisableBackupScheduler(c *gin.Context) {
 		tx.Commit()
 	}()
 
-	pls, err := backup.GetPolicies(tx, req)
+	pls, err := policy.GetPolicies(tx, req)
 	if err != nil {
 		schema.Response(c, nil, err)
 		return
@@ -347,4 +345,28 @@ func (h *Handler) DisableBackupScheduler(c *gin.Context) {
 	}
 
 	schema.Response(c, nil, nil)
+}
+
+func (h *Handler) SetPoolSize(c *gin.Context) {
+	req := schema.SetPoolSizeRequest{}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		schema.Response(c, nil, err)
+		return
+	}
+
+	worker.Pool.SetPoolSize(req.Size)
+
+	schema.Response(c, nil, nil)
+}
+
+func (h *Handler) ListPoolWorker(c *gin.Context) {
+	var ws []schema.PoolWorkerItem
+	for _, w := range worker.Pool.Workers {
+		ws = append(ws, schema.PoolWorkerItem{
+			WorkerID: w.ID,
+		})
+	}
+
+	schema.Response(c, ws, nil)
 }
