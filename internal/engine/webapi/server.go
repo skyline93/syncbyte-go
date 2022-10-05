@@ -60,6 +60,10 @@ func (s *Server) initRouter() {
 	agentGv1 := v1.Group("/agent")
 	agentGv1.POST("", h.AddAgent)
 	agentGv1.GET("", h.ListAgents)
+
+	policyGv1 := v1.Group("/policy")
+	policyGv1.POST("/enable", h.EnableBackupScheduler)
+	policyGv1.POST("/disable", h.DisableBackupScheduler)
 }
 
 func (s *Server) initLogger() error {

@@ -280,3 +280,71 @@ func (h *Handler) ListAgents(c *gin.Context) {
 
 	schema.Response(c, agents, nil)
 }
+
+func (h *Handler) EnableBackupScheduler(c *gin.Context) {
+	var err error
+	req := []uint{}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		schema.Response(c, nil, err)
+		return
+	}
+
+	tx := repository.Db.Begin()
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+		tx.Commit()
+	}()
+
+	pls, err := backup.GetPolicies(tx, req)
+	if err != nil {
+		schema.Response(c, nil, err)
+		return
+	}
+
+	for _, pl := range pls {
+		log.Printf("activate backup scheduler %d", pl.Scheduler.PolicyID)
+		if err := pl.Scheduler.Activate(tx); err != nil {
+			schema.Response(c, nil, err)
+			return
+		}
+	}
+
+	schema.Response(c, nil, nil)
+}
+
+func (h *Handler) DisableBackupScheduler(c *gin.Context) {
+	var err error
+	req := []uint{}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		schema.Response(c, nil, err)
+		return
+	}
+
+	tx := repository.Db.Begin()
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+		tx.Commit()
+	}()
+
+	pls, err := backup.GetPolicies(tx, req)
+	if err != nil {
+		schema.Response(c, nil, err)
+		return
+	}
+
+	for _, pl := range pls {
+		log.Printf("inactivate backup scheduler %d", pl.Scheduler.PolicyID)
+		if err := pl.Scheduler.Inactivate(tx); err != nil {
+			schema.Response(c, nil, err)
+			return
+		}
+	}
+
+	schema.Response(c, nil, nil)
+}

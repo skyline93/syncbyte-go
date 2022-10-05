@@ -56,12 +56,11 @@ func LoadPolicy(db *gorm.DB, id uint) (*Policy, error) {
 	}, nil
 }
 
-func LoadPolicies(db *gorm.DB) (pls []*Policy, err error) {
+func GetPolicies(db *gorm.DB, policyIDs []uint) (pls []*Policy, err error) {
 	var items []repository.BackupPolicy
 
-	if result := db.Find(&items); result.Error != nil {
-		err = result.Error
-		return
+	if result := db.Where("id IN ?", policyIDs).Find(&items); result.Error != nil {
+		return nil, result.Error
 	}
 
 	for _, item := range items {
@@ -86,7 +85,7 @@ func LoadPolicies(db *gorm.DB) (pls []*Policy, err error) {
 		pls = append(pls, pl)
 	}
 
-	return
+	return pls, nil
 }
 
 func allocateAgent(agentID uint) uint {
@@ -134,7 +133,7 @@ func CreatePolicy(db *gorm.DB, resourceID, agentID uint, retention int, isCompre
 }
 
 func (s *Scheduler) Activate(db *gorm.DB) error {
-	if result := db.Model(&repository.BackupPolicy{}).Where("id = ?", s.PolicyID).Updates(repository.BackupPolicy{IsActive: false}); result.Error != nil {
+	if result := db.Model(&repository.BackupPolicy{}).Where("id = ?", s.PolicyID).Update("is_active", true); result.Error != nil {
 		return result.Error
 	}
 
@@ -144,7 +143,7 @@ func (s *Scheduler) Activate(db *gorm.DB) error {
 }
 
 func (s *Scheduler) Inactivate(db *gorm.DB) error {
-	if result := db.Model(&repository.BackupPolicy{}).Where("id = ?", s.PolicyID).Updates(repository.BackupPolicy{IsActive: true}); result.Error != nil {
+	if result := db.Model(&repository.BackupPolicy{}).Where("id = ?", s.PolicyID).Update("is_active", false); result.Error != nil {
 		return result.Error
 	}
 
