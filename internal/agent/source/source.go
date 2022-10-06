@@ -3,7 +3,7 @@ package source
 import "github.com/skyline93/syncbyte-go/internal/pkg/types"
 
 type Source interface {
-	Dump(destFile string) error
+	Dump(destFile string, local bool) error
 }
 
 type Options struct {

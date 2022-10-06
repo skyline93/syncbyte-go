@@ -86,7 +86,7 @@ func (b *BackupJob) Run() (err error) {
 		Jobs.Put(b.JobID, jobInfo, 60)
 	}()
 
-	if err = b.Source.Dump(dumpFile); err != nil {
+	if err = b.Source.Dump(dumpFile, Opts.Local); err != nil {
 		log.Printf("dump file failed, error: %v", err)
 		return err
 	}
