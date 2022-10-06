@@ -32,7 +32,7 @@ func (s *PostgreSQL) Dump(destFile string) error {
 	}
 
 	c := fmt.Sprintf(
-		"chmod -R o+w %s; docker run --rm -v %s:/opt:rw postgres:%s bash -c 'pg_dump %s -Fc -f /opt/%s;chmod -R g+w /opt;chown %s:%s /opt/%s'",
+		"chmod -R o+w %s; docker run --rm --network host -v %s:/opt:rw postgres:%s bash -c 'pg_dump %s -Fc -f /opt/%s;chmod -R g+w /opt;chown %s:%s /opt/%s'",
 		path, path, s.Opts.Version, s.Uri(), filename, u.Uid, u.Gid, filename,
 	)
 	_, err = utils.Exec("/bin/sh", "-c", c)
