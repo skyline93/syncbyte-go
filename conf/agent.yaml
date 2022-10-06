@@ -1,4 +1,5 @@
 listenAddr: ":50051"
+local: true
 backup:
   mountPoint: "/var/run/backup"
 restore:

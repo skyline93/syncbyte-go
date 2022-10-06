@@ -23,7 +23,7 @@ func (s *PostgreSQL) Uri() string {
 	)
 }
 
-func (s *PostgreSQL) Dump(destFile string) error {
+func (s *PostgreSQL) Dump(destFile string, local bool) error {
 	path, filename := filepath.Split(destFile)
 
 	u, err := user.Current()
@@ -31,10 +31,16 @@ func (s *PostgreSQL) Dump(destFile string) error {
 		return err
 	}
 
-	c := fmt.Sprintf(
-		"chmod -R o+w %s; docker run --rm --network host -v %s:/opt:rw postgres:%s bash -c 'pg_dump %s -Fc -f /opt/%s;chmod -R g+w /opt;chown %s:%s /opt/%s'",
-		path, path, s.Opts.Version, s.Uri(), filename, u.Uid, u.Gid, filename,
-	)
+	var c string
+	if local {
+		c = fmt.Sprintf("pg_dump %s -Fc -f %s", s.Uri(), destFile)
+	} else {
+		c = fmt.Sprintf(
+			"chmod -R o+w %s; docker run --rm --network host -v %s:/opt:rw postgres:%s bash -c 'pg_dump %s -Fc -f /opt/%s;chmod -R g+w /opt;chown %s:%s /opt/%s'",
+			path, path, s.Opts.Version, s.Uri(), filename, u.Uid, u.Gid, filename,
+		)
+	}
+
 	_, err = utils.Exec("/bin/sh", "-c", c)
 	return err
 }
