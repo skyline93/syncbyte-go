@@ -2,8 +2,11 @@ package agent
 
 import (
 	"context"
+	"io"
 	"log"
 	"net"
+	"os"
+	"path"
 
 	"github.com/pkg/errors"
 	"github.com/skyline93/syncbyte-go/internal/agent/backend"
@@ -109,6 +112,12 @@ func (s *RPCServer) GetJobStatus(ctx context.Context, in *pb.GetJobRequest) (*pb
 }
 
 func (s *RPCServer) Run() error {
+	logFile, err := os.OpenFile(path.Join(Opts.LogPath, "agent.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0664)
+	if err != nil {
+		return err
+	}
+	log.SetOutput(io.MultiWriter(logFile, os.Stdout))
+
 	lis, err := net.Listen("tcp", Opts.ListenAddr)
 	if err != nil {
 		return errors.Wrapf(err, "listen failed, addr: %s", Opts.ListenAddr)

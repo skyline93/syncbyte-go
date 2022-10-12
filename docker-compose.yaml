@@ -13,7 +13,7 @@ services:
       - POSTGRES_DB=syncbyte
     restart: always
 
-  minio:
+  backend:
     image: minio/minio:latest
     expose:
       - 9000:9000
@@ -31,11 +31,11 @@ services:
   init-minio-bucket:
     image: minio/mc
     depends_on:
-      - minio
+      - backend
     restart: on-failure
     entrypoint: >
       /bin/sh -c "
-      /usr/bin/mc config host add local http://minio:9000 minioadmin minioadmin;
+      /usr/bin/mc config host add local http://backend:9000 minioadmin minioadmin;
       /usr/bin/mc rm -r --force local/syncbyte-dev;
       /usr/bin/mc mb local/syncbyte-dev;
       /usr/bin/mc admin user add local accesskey123 secretkey123;
@@ -46,11 +46,10 @@ services:
     image: syncbyte:latest
     depends_on:
       - postgresql
-      - minio
+      - backend
       - init-minio-bucket
     restart: on-failure
     volumes:
-      - /home/greene/syncbyte-go/data/backup:/var/run/backup
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/bin/docker:/usr/local/bin/docker
     expose:
@@ -65,7 +64,7 @@ services:
     image: syncbyte:latest
     depends_on:
       - postgresql
-      - minio
+      - backend
       - init-minio-bucket
     restart: on-failure
     expose:

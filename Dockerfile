@@ -1,4 +1,4 @@
-FROM golang:1.18
+FROM golang:1.18-buster
 
 COPY output/syncbyte-agent /usr/bin/syncbyte-agent
 COPY output/syncbyte-engine /usr/bin/syncbyte-engine

@@ -2,7 +2,7 @@ listenAddr: ":8000"
 logPath: "/var/log/syncbyte"
 database:
   type: postgresql
-  host: "127.0.0.1"
+  host: "postgresql"
   port: 5432
   user: syncbyte
   password: "123456"

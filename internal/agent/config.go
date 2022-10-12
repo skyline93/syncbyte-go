@@ -14,6 +14,7 @@ import (
 type Options struct {
 	ListenAddr string         `json:"listenAddr" mapstructure:"listenAddr"`
 	Local      bool           `json:"local" mapstructure:"local"`
+	LogPath    string         `json:"logPath" mapstructure:"logPath"`
 	Backup     BackupOptions  `json:"backup" mapstructure:"backup"`
 	Restore    RestoreOptions `json:"restore" mapstructure:"restore"`
 }
