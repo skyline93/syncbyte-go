@@ -104,7 +104,11 @@ type Agent struct {
 type ScheduledJob struct {
 	gorm.Model
 
-	JobType        string
-	Status         string
+	JobType   string
+	Status    string
+	JobID     uint // backup\restore job id
+	StartTime time.Time
+	EndTime   time.Time
+
 	BackupPolicyID uint
 }
