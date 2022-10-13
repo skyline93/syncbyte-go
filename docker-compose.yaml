@@ -42,10 +42,9 @@ services:
       /usr/bin/mc admin policy set local readwrite user=accesskey123;
       "
 
-  agent:
-    image: syncbyte:latest
+  agent-postgresql:
+    image: syncbyte-agent:postgresql
     depends_on:
-      - postgresql
       - backend
       - init-minio-bucket
     restart: on-failure
@@ -61,9 +60,9 @@ services:
       - run
 
   engine:
-    image: syncbyte:latest
+    image: syncbyte-engine:latest
     depends_on:
-      - postgresql
+      - agent-postgresql
       - backend
       - init-minio-bucket
     restart: on-failure

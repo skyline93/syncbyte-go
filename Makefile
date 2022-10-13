@@ -1,8 +1,12 @@
 all: syncbyte-engine syncbyte-agent syncbyte
 
-docker-image: clean syncbyte-engine syncbyte-agent syncbyte
-	docker rmi -f syncbyte:latest
-	docker build -t syncbyte:latest .
+docker-image-engine: clean syncbyte-engine syncbyte-agent syncbyte
+	docker rmi -f syncbyte-engine:latest
+	docker build -t syncbyte-engine:latest .
+
+docker-image-agent-postgresql: clean syncbyte-engine syncbyte-agent syncbyte
+	docker rmi -f syncbyte-agent:postgresql
+	docker build -t syncbyte-agent:postgresql -f Dockerfile-agent-postgresql .
 
 rpm: clean syncbyte-engine syncbyte-agent syncbyte
 	rm -rf ~/rpmbuild
