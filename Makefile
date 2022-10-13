@@ -15,13 +15,13 @@ rpm: clean syncbyte-engine syncbyte-agent syncbyte
 	rm -rf ~/rpmbuild
 
 syncbyte-engine:
-	CGO_ENABLED=0 go build -o output/syncbyte-engine cmd/engine/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o output/syncbyte-engine cmd/engine/main.go
 
 syncbyte-agent:
-	CGO_ENABLED=0 go build -o output/syncbyte-agent cmd/agent/main.go
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o output/syncbyte-agent cmd/agent/main.go
 
 syncbyte:
-	CGO_ENABLED=0 go build -o output/syncbyte cmd/syncbyte/*
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o output/syncbyte cmd/syncbyte/*
 
 clean:
 	rm -rf logs data output

@@ -1,6 +1,6 @@
 kind: backend
 spec:
-  - endpoint: 127.0.0.1:9000
+  - endpoint: backend:9000
     accessKey: accesskey123
     secretKey: secretkey123
     bucket: syncbyte-dev
