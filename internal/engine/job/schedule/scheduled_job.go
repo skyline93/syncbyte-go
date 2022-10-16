@@ -1,10 +1,11 @@
-package job
+package schedule
 
 import (
 	"time"
 
 	"github.com/skyline93/syncbyte-go/internal/engine/policy"
 	"github.com/skyline93/syncbyte-go/internal/engine/repository"
+	"github.com/skyline93/syncbyte-go/internal/engine/resource"
 	"github.com/skyline93/syncbyte-go/internal/pkg/types"
 	"gorm.io/gorm"
 )
@@ -25,10 +26,12 @@ const (
 )
 
 type ScheduledJob struct {
-	ID     uint
-	Type   JobType
-	JobID  uint
-	Status string
+	ID        uint
+	Type      JobType
+	JobID     uint
+	Status    JobStatus
+	StartTime time.Time
+	EndTime   time.Time
 }
 
 func (s *ScheduledJob) Start(db *gorm.DB) (err error) {
@@ -37,9 +40,14 @@ func (s *ScheduledJob) Start(db *gorm.DB) (err error) {
 		return result.Error
 	}
 
-	if result := db.Model(item).Updates(map[string]interface{}{"status": Running, "start_time": time.Now()}); result.Error != nil {
+	startTime := time.Now()
+
+	if result := db.Model(item).Updates(map[string]interface{}{"status": Running, "start_time": startTime}); result.Error != nil {
 		return result.Error
 	}
+
+	s.Status = Running
+	s.StartTime = startTime
 
 	return nil
 }
@@ -50,9 +58,14 @@ func (s *ScheduledJob) Complete(db *gorm.DB) (err error) {
 		return result.Error
 	}
 
-	if result := db.Model(item).Updates(map[string]interface{}{"status": Completed, "end_time": time.Now()}); result.Error != nil {
+	endTime := time.Now()
+
+	if result := db.Model(item).Updates(map[string]interface{}{"status": Completed, "end_time": endTime}); result.Error != nil {
 		return result.Error
 	}
+
+	s.Status = Running
+	s.EndTime = endTime
 
 	return nil
 }
@@ -63,14 +76,19 @@ func (s *ScheduledJob) Fail(db *gorm.DB) (err error) {
 		return result.Error
 	}
 
-	if result := db.Model(item).Updates(map[string]interface{}{"status": Failed, "end_time": time.Now()}); result.Error != nil {
+	endTime := time.Now()
+
+	if result := db.Model(item).Updates(map[string]interface{}{"status": Failed, "end_time": endTime}); result.Error != nil {
 		return result.Error
 	}
+
+	s.Status = Running
+	s.EndTime = endTime
 
 	return nil
 }
 
-func (s *ScheduledJob) ScheduleBackupJob(backendID uint, plcOpts *policy.Policy, db *gorm.DB) (err error) {
+func (s *ScheduledJob) ScheduleBackupJob(plcOpts *policy.Policy, db *gorm.DB) (err error) {
 	tx := db.Begin()
 	defer func() {
 		if err != nil {
@@ -79,7 +97,7 @@ func (s *ScheduledJob) ScheduleBackupJob(backendID uint, plcOpts *policy.Policy,
 		tx.Commit()
 	}()
 
-	bj, _, err := s.addBackupJob(backendID, plcOpts, tx)
+	bj, _, err := s.addBackupJob(plcOpts, tx)
 	if err != nil {
 		return err
 	}
@@ -106,13 +124,30 @@ func (s *ScheduledJob) add(jobID uint, jobType JobType, db *gorm.DB) (j *reposit
 	return j, nil
 }
 
-func (s *ScheduledJob) addBackupJob(backendID uint, plcOpts *policy.Policy, db *gorm.DB) (bj *repository.BackupJob, bs *repository.BackupSet, err error) {
+func (s *ScheduledJob) addBackupJob(plcOpts *policy.Policy, db *gorm.DB) (bj *repository.BackupJob, bs *repository.BackupSet, err error) {
+	source, err := resource.GetSource(plcOpts.ResourceID, db)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	allocater := resource.Allocater{}
+	backend, err := allocater.AllocateBackend(types.BackendDataTypeMapping[source.DBType], db)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	backupHost, err := allocater.AllocateBackupHost(db)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	bj = &repository.BackupJob{
 		StartTime:  time.Now(),
 		Status:     types.Queued,
 		ResourceID: plcOpts.ResourceID,
-		BackendID:  backendID,
+		BackendID:  backend.ID,
 		PolicyID:   plcOpts.ID,
+		HostID:     backupHost.ID,
 	}
 	if result := db.Create(bj); result.Error != nil {
 		return nil, nil, result.Error
@@ -124,7 +159,7 @@ func (s *ScheduledJob) addBackupJob(backendID uint, plcOpts *policy.Policy, db *
 		BackupJobID: bj.ID,
 		BackupTime:  bj.StartTime,
 		ResourceID:  plcOpts.ResourceID,
-		BackendID:   backendID, // XXX 仅在备份任务上
+		BackendID:   backend.ID, // XXX 仅在备份任务上
 		Retention:   plcOpts.Retention,
 	}
 	if result := db.Create(bs); result.Error != nil {
@@ -141,10 +176,12 @@ func Get(jobID uint, db *gorm.DB) (j *ScheduledJob, err error) {
 	}
 
 	return &ScheduledJob{
-		ID:     item.ID,
-		Type:   JobType(item.JobType),
-		JobID:  item.JobID,
-		Status: item.Status,
+		ID:        item.ID,
+		Type:      JobType(item.JobType),
+		JobID:     item.JobID,
+		Status:    JobStatus(item.Status),
+		StartTime: item.StartTime,
+		EndTime:   item.EndTime,
 	}, nil
 }
 
@@ -160,7 +197,7 @@ func GetSchedulingJobs() (js []ScheduledJob, err error) {
 			ID:     i.ID,
 			Type:   JobType(i.JobType),
 			JobID:  i.JobID,
-			Status: i.Status,
+			Status: JobStatus(i.Status),
 		}
 
 		js = append(js, j)

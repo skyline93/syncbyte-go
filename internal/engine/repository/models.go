@@ -30,12 +30,34 @@ type S3Backend struct {
 	DataType    types.BackendDataType
 }
 
+type Source struct {
+	gorm.Model
+	Name     string
+	DBType   types.DBType
+	Version  string
+	Server   string
+	Port     int
+	User     string
+	Password string
+	DBName   string
+	Args     string
+}
+
+type Backend struct {
+	gorm.Model
+	EndPoint    string
+	AccessKey   string
+	SecretKey   string
+	Bucket      string
+	StorageType string
+	DataType    types.BackendDataType
+}
+
 type BackupPolicy struct {
 	gorm.Model
 	ResourceID uint
 	Retention  int
 	IsCompress bool `gorm:"default:false"`
-	AgentID    uint
 	Status     string
 
 	ScheduleType string
@@ -44,6 +66,8 @@ type BackupPolicy struct {
 	StartTime    types.LocalTime
 	EndTime      types.LocalTime
 	IsActive     bool `gorm:"default:true"`
+
+	AgentID uint
 }
 
 type BackupJob struct {
@@ -54,6 +78,7 @@ type BackupJob struct {
 	ResourceID uint
 	BackendID  uint
 	PolicyID   uint
+	HostID     uint
 }
 
 type BackupSet struct {
@@ -98,6 +123,13 @@ type Agent struct {
 	IP       string
 	Port     int
 	HostName string
+	HostType string
+}
+
+type Host struct {
+	gorm.Model
+	HostName string
+	IP       string
 	HostType string
 }
 
