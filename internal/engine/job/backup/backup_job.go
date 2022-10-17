@@ -2,8 +2,11 @@ package backup
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/skyline93/syncbyte-go/internal/engine/agent"
+	"github.com/skyline93/syncbyte-go/internal/engine/options"
 	"github.com/skyline93/syncbyte-go/internal/engine/repository"
 	"github.com/skyline93/syncbyte-go/internal/engine/resource"
 	"gorm.io/gorm"
@@ -100,6 +103,35 @@ func (b *BackupJob) Run(ctx context.Context, db *gorm.DB) (err error) {
 	}
 
 	backupHost, err := resource.GetBackupHost(b.HostID, db)
+	if err != nil {
+		return err
+	}
+
+	agent, err := agent.New(fmt.Sprintf("%s:50051", backupHost.IP))
+	if err != nil {
+		return err
+	}
+	defer agent.Close()
+
+	sourceOpts := options.SourceOption{
+		Name:     source.Name,
+		Server:   source.Server,
+		User:     source.User,
+		Password: source.Password,
+		DbName:   source.DBName,
+		Version:  source.Version,
+		DbType:   source.DBType,
+		Port:     source.Port,
+	}
+
+	backendOpts := options.BackendOption{
+		EndPoint:  backend.EndPoint,
+		AccessKey: backend.AccessKey,
+		SecretKey: backend.SecretKey,
+		Bucket:    backend.Bucket,
+	}
+
+	rep, err := agent.StartBackup(policy.IsCompress, sourceOpts, backendOpts)
 	if err != nil {
 		return err
 	}

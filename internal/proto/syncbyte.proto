@@ -11,10 +11,9 @@ service Agent {
 }
 
 message BackupRequest {
-    string          datasetname = 1;
-    bool            iscompress = 2;
-    SourceOptions   sourceOpts = 3;
-    BackendOptions  backendOpts = 4;
+    bool            iscompress = 1;
+    SourceOptions   sourceOpts = 2;
+    BackendOptions  backendOpts = 3;
 }
 
 message BackupResponse {
