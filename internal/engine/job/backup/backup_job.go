@@ -113,7 +113,7 @@ func (b *BackupJob) Run(ctx context.Context, db *gorm.DB) (err error) {
 	}
 	defer agent.Close()
 
-	sourceOpts := options.SourceOption{
+	_ = options.SourceOption{
 		Name:     source.Name,
 		Server:   source.Server,
 		User:     source.User,
@@ -124,17 +124,19 @@ func (b *BackupJob) Run(ctx context.Context, db *gorm.DB) (err error) {
 		Port:     source.Port,
 	}
 
-	backendOpts := options.BackendOption{
+	_ = options.BackendOption{
 		EndPoint:  backend.EndPoint,
 		AccessKey: backend.AccessKey,
 		SecretKey: backend.SecretKey,
 		Bucket:    backend.Bucket,
 	}
 
-	rep, err := agent.StartBackup(policy.IsCompress, sourceOpts, backendOpts)
-	if err != nil {
-		return err
-	}
+	// rep, err := agent.StartBackup(policy.IsCompress, sourceOpts, backendOpts)
+	// if err != nil {
+	// 	return err
+	// }
+
+	return
 }
 
 func Get(jobID uint, db *gorm.DB) (j *BackupJob, err error) {
