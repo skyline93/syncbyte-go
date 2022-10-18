@@ -25,6 +25,13 @@ func InitDB() {
 		&BackupPolicy{},
 		&Agent{},
 		&ScheduledJob{},
+		&Resource{},
+		&Database{},
+		&BackupSchedule{},
+		&DataStorage{},
+		&S3{},
+		&Local{},
+		&Host{},
 	); err != nil {
 		panic(err)
 	}
