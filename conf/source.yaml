@@ -2,7 +2,7 @@ kind: source
 spec:
   - dbType: postgresql
     name: core-cms
-    server: 127.0.0.1
+    server: postgresql
     port: 5432
     user: syncbyte
     password: "123456"
@@ -12,7 +12,7 @@ spec:
     backupPolicy:
       retention: 7
       scheduleType: cron
-      cron: "*/2 * * * *"
+      cron: "*/1 * * * *"
       frequency: 120
       startTime: "20:00:00"
       endTime: "06:00:00"

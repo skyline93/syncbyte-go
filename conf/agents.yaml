@@ -2,9 +2,9 @@ kind: agent
 spec:
   - ip: agent-postgresql
     port: 50051
-    hostName: "SyncbyteBackup"
+    hostName: "agent-postgresql"
     hostType: backup
   - ip: agent-postgresql
     port: 50051
-    hostName: "SyncbyteRestore"
+    hostName: "agent-postgresql"
     hostType: restore
