@@ -68,11 +68,11 @@ type LRUCache struct {
 	defaultDuration time.Duration
 }
 
-func NewLRUCache(size int) *LRUCache {
+func NewLRUCache(size int, defaultExpiretion time.Duration) *LRUCache {
 	return &LRUCache{
 		items:           make(map[interface{}]item, size),
 		lru:             NewLRU(size),
-		defaultDuration: DefaultDuration,
+		defaultDuration: defaultExpiretion,
 	}
 }
 
@@ -203,8 +203,8 @@ func (g *gc) Stop() {
 	g.stop <- struct{}{}
 }
 
-func newLRUCacheWithGC(size int, cleanupInterval time.Duration) *LRUCache {
-	c := NewLRUCache(size)
+func newLRUCacheWithGC(size int, defaultExpiretion time.Duration, cleanupInterval time.Duration) *LRUCache {
+	c := NewLRUCache(size, defaultExpiretion)
 
 	g := gc{
 		Interval: cleanupInterval,
@@ -220,7 +220,7 @@ type Cache struct {
 	*LRUCache
 }
 
-func New(size int, cleanupInterval time.Duration) *Cache {
-	c := newLRUCacheWithGC(size, cleanupInterval)
+func New(size int, defaultExpiretion time.Duration, cleanupInterval time.Duration) *Cache {
+	c := newLRUCacheWithGC(size, defaultExpiretion, cleanupInterval)
 	return &Cache{c}
 }
