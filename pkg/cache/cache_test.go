@@ -6,7 +6,7 @@ import (
 )
 
 func TestCache(t *testing.T) {
-	c := New(5, time.Second)
+	c := New(5, time.Second*60, time.Second)
 
 	v := c.Get("a")
 	if v != nil {
@@ -46,7 +46,7 @@ func TestCache(t *testing.T) {
 }
 
 func TestCacheExpiretion(t *testing.T) {
-	c := New(5, time.Second)
+	c := New(5, time.Second*60, time.Second)
 	c.Set("a", 1, 0)
 	c.Set("b", 2, time.Second*20)
 	c.Set("c", 3, time.Second*30)
