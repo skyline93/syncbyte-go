@@ -6,7 +6,6 @@ import (
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/mitchellh/mapstructure"
-	"github.com/skyline93/gokv"
 	"github.com/skyline93/syncbyte-go/internal/pkg/types"
 	"github.com/spf13/viper"
 )
@@ -30,7 +29,6 @@ type RestoreOptions struct {
 var (
 	CfgFile string
 	Opts    *Options
-	Jobs    *gokv.KV = gokv.New()
 )
 
 type JobInfo struct {
