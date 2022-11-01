@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"path"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/skyline93/syncbyte-go/internal/agent/backend"
@@ -14,8 +15,11 @@ import (
 	"github.com/skyline93/syncbyte-go/internal/agent/source"
 	"github.com/skyline93/syncbyte-go/internal/pkg/types"
 	pb "github.com/skyline93/syncbyte-go/internal/proto"
+	"github.com/skyline93/syncbyte-go/pkg/cache"
 	"google.golang.org/grpc"
 )
+
+var Cache = *cache.New(4096, time.Second*60*60*6, time.Second*60)
 
 type RPCServer struct {
 	pb.UnimplementedAgentServer
@@ -105,7 +109,7 @@ func (s *RPCServer) StartRestore(ctx context.Context, in *pb.RestoreRequest) (*p
 
 func (s *RPCServer) GetJobStatus(ctx context.Context, in *pb.GetJobRequest) (*pb.GetJobResponse, error) {
 	log.Printf("get job status, job_id: %v", in.Jobid)
-	v := Jobs.Get(in.Jobid)
+	v := Cache.Get(in.Jobid)
 	jobInfo := v.(JobInfo)
 
 	return &pb.GetJobResponse{Status: string(jobInfo.Status)}, nil

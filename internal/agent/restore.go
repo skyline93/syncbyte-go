@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -23,10 +22,7 @@ type RestoreJob struct {
 }
 
 func NewRestoreJob(dest dest.Dest, backend backend.Backend, mountPoint string, datasetName string, isUnCompress bool) (*RestoreJob, error) {
-	jobID, ok := Jobs.PutWithUuid(JobInfo{Status: types.Running})
-	if !ok {
-		return nil, errors.New("gen job id error")
-	}
+	jobID := Cache.SetDefaultWithUuidKey(JobInfo{Status: types.Running})
 
 	return &RestoreJob{
 		JobID:        jobID,
@@ -46,18 +42,18 @@ func (r *RestoreJob) Run() (err error) {
 	destFile := r.destFile()
 
 	defer func() {
-		v := Jobs.Get(r.JobID)
+		v := Cache.Get(r.JobID)
 		jobInfo := v.(JobInfo)
 
 		if err != nil {
 			log.Printf("run restore job failed, error: %v", err)
 			jobInfo.Status = types.Failed
-			Jobs.Put(r.JobID, jobInfo, 60)
+			Cache.SetDefault(r.JobID, jobInfo)
 			return
 		}
 
 		jobInfo.Status = types.Successed
-		Jobs.Put(r.JobID, jobInfo, 60)
+		Cache.SetDefault(r.JobID, jobInfo)
 	}()
 
 	if r.IsUnCompress {

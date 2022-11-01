@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -38,10 +37,7 @@ type BackupJob struct {
 }
 
 func NewBackupJob(source source.Source, backend backend.Backend, mountPoint string, datasetName string, isCompress bool) (*BackupJob, error) {
-	jobID, ok := Jobs.PutWithUuid(JobInfo{Status: types.Running})
-	if !ok {
-		return nil, errors.New("gen job id error")
-	}
+	jobID := Cache.SetDefaultWithUuidKey(JobInfo{Status: types.Running})
 
 	return &BackupJob{
 		JobID:       jobID,
@@ -71,19 +67,19 @@ func (b *BackupJob) Run() (err error) {
 	dumpFile := b.destFile()
 
 	defer func() {
-		v := Jobs.Get(b.JobID)
+		v := Cache.Get(b.JobID)
 		jobInfo := v.(JobInfo)
 
 		if err != nil {
 			log.Printf("run backup job failed, error: %v", err)
 			jobInfo.Status = types.Failed
-			Jobs.Put(b.JobID, jobInfo, 60)
+			Cache.SetDefault(b.JobID, jobInfo)
 			return
 		}
 
 		jobInfo.Size = size
 		jobInfo.Status = types.Successed
-		Jobs.Put(b.JobID, jobInfo, 60)
+		Cache.SetDefault(b.JobID, jobInfo)
 	}()
 
 	if err = b.Source.Dump(dumpFile, Opts.Local); err != nil {
