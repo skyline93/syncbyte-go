@@ -3,108 +3,75 @@ package repository
 import (
 	"time"
 
-	"github.com/skyline93/syncbyte-go/internal/pkg/types"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
-type DBResource struct {
+type Resource struct {
 	gorm.Model
-	Name     string
-	DBType   types.DBType
-	Version  string
-	Server   string
-	Port     int
-	User     string
-	Password string
-	DBName   string
-	Args     string
-}
-
-type S3Backend struct {
-	gorm.Model
-	EndPoint    string
-	AccessKey   string
-	SecretKey   string
-	Bucket      string
-	StorageType string
-	DataType    types.BackendDataType
+	Name         string
+	ResourceType string
+	Args         datatypes.JSON `gorm:"type:jsonb" json:"args"`
 }
 
 type BackupPolicy struct {
 	gorm.Model
-	ResourceID uint
 	Retention  int
-	IsCompress bool `gorm:"default:false"`
-	AgentID    uint
+	IsCompress bool
 	Status     string
 
-	ScheduleType string
-	Cron         string
-	Frequency    int
-	StartTime    types.LocalTime
-	EndTime      types.LocalTime
-	IsActive     bool `gorm:"default:true"`
+	ResourceID uint
 }
 
-type BackupJob struct {
+type BackupSchedule struct {
 	gorm.Model
-	StartTime  time.Time
-	EndTime    time.Time
-	Status     types.JobStatus
-	ResourceID uint
-	BackendID  uint
-	PolicyID   uint
+	ScheduleType string
+	Cron         string
+	Interval     int
+	IsActive     bool
+
+	PolicyID uint
+}
+
+type StorageUnit struct {
+	gorm.Model
+	Name    string
+	StuType string
+
+	Args datatypes.JSON `gorm:"type:jsonb" json:"args"`
 }
 
 type BackupSet struct {
 	gorm.Model
-	DataSetName string
-	IsCompress  bool
-	IsValid     bool `gorm:"default:false"`
-	Size        int
-	BackupJobID uint
-	BackupTime  time.Time
-	ResourceID  uint
-	BackendID   uint
-	Retention   int
+	IsCompress bool
+	IsValid    bool
+	BackupTime time.Time
+	Retention  int
+	Expiration time.Time
+	Size       uint64
+
+	ResourceID uint
 }
 
-type RestoreJob struct {
+type Host struct {
 	gorm.Model
-	StartTime   time.Time
-	EndTime     time.Time
-	Status      types.JobStatus
-	BackupSetID uint
-}
-
-type RestoreDBResource struct {
-	gorm.Model
-	Name         string
-	DBType       types.DBType
-	Version      string
-	Server       string
-	Port         int
-	User         string
-	Password     string
-	DBName       string
-	Args         string
-	RestoreJobID uint
-	IsValid      bool `gorm:"default:false"`
-	RestoreTime  time.Time
-}
-
-type Agent struct {
-	gorm.Model
-	IP       string
-	Port     int
+	Ip       string
 	HostName string
 	HostType string
 }
 
 type ScheduledJob struct {
 	gorm.Model
+	StartTime       time.Time
+	EndTime         time.Time
+	Status          string
+	JobType         string
+	ResourceType    string
+	StorageUnitType string
+	Args            datatypes.JSON `gorm:"type:jsonb" json:"args"`
 
-	JobType        string
-	Status         string
+	HostID         uint
+	BackupSetID    uint
 	BackupPolicyID uint
+	StorageUnitID  uint
 }

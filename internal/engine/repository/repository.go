@@ -16,14 +16,15 @@ func InitDB() {
 	}
 
 	if err = Db.AutoMigrate(
-		&DBResource{},
-		&S3Backend{},
-		&BackupJob{},
-		&BackupSet{},
-		&RestoreJob{},
-		&RestoreDBResource{},
+		&Resource{},
+		// &Database{},
 		&BackupPolicy{},
-		&Agent{},
+		&BackupSchedule{},
+		&StorageUnit{},
+		// &S3{},
+		// &Local{},
+		&BackupSet{},
+		&Host{},
 		&ScheduledJob{},
 	); err != nil {
 		panic(err)
