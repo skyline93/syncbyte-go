@@ -51,6 +51,11 @@ type BackupPolicy struct {
 	Resource   *Resource
 }
 
+type ScheduleOptions struct {
+	Cron     string
+	Interval int
+}
+
 func addResource(db *gorm.DB, name string, resType ResourceType, options interface{}) (uint, error) {
 	args, err := json.Marshal(options)
 	if err != nil {
@@ -79,10 +84,18 @@ func addBackupSchedule(db *gorm.DB, scheduleType string, policyID uint, args ...
 
 	switch scheduleType {
 	case "cron":
-		cron := args[0].(string)
+		cron, ok := args[0].(string)
+		if !ok {
+			return errors.New("cron params error")
+		}
+
 		sch.Cron = cron
 	case "interval":
-		interval := args[1].(int)
+		interval, ok := args[1].(int)
+		if !ok {
+			return errors.New("interval params error")
+		}
+
 		sch.Interval = interval
 	default:
 		return errors.New("schedule args error")
