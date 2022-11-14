@@ -17,7 +17,7 @@ func InitWorkPool() {
 }
 
 type Job interface {
-	Run()
+	Run() error
 }
 
 type WorkerPool struct {

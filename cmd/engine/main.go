@@ -6,7 +6,9 @@ import (
 
 	"github.com/skyline93/syncbyte-go/internal/engine/options"
 	"github.com/skyline93/syncbyte-go/internal/engine/repository"
+	"github.com/skyline93/syncbyte-go/internal/engine/scheduler"
 	"github.com/skyline93/syncbyte-go/internal/engine/webserver"
+	"github.com/skyline93/syncbyte-go/internal/pkg/worker"
 	"github.com/spf13/cobra"
 )
 
@@ -32,12 +34,25 @@ var cmdRun = &cobra.Command{
 	},
 }
 
+var cmdRunScheduler = &cobra.Command{
+	Use:   "run-scheduler",
+	Short: "run scheduler of syncbyte-engine",
+	Run: func(cmd *cobra.Command, args []string) {
+		worker.InitWorkPool()
+
+		sch := scheduler.New()
+		if err := sch.Run(); err != nil {
+			panic(err)
+		}
+	},
+}
+
 func init() {
 	cobra.OnInitialize(
 		options.InitConfig,
 		repository.InitDB,
 	)
-	cmdRoot.AddCommand(cmdRun)
+	cmdRoot.AddCommand(cmdRun, cmdRunScheduler)
 }
 
 func Execute() {

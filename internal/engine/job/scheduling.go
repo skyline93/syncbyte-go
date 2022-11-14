@@ -22,6 +22,35 @@ type ScheduledJob struct {
 	StorageUnit     *entity.StorageUnit
 }
 
+func LoadScheduledJobFromModel(db *gorm.DB, j repository.ScheduledJob) (*ScheduledJob, error) {
+	h, err := entity.GetHost(j.HostID, db)
+	if err != nil {
+		return nil, err
+	}
+
+	p, err := entity.GetBackupPolicy(j.HostID, db)
+	if err != nil {
+		return nil, err
+	}
+
+	s, err := entity.GetStorageUnit(j.HostID, db)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ScheduledJob{
+		ID:              j.ID,
+		Status:          j.Status,
+		JobType:         j.JobType,
+		ResourceType:    j.ResourceType,
+		StorageUnitType: j.StorageUnitType,
+		BackupSetID:     j.BackupSetID,
+		Host:            h,
+		BackupPolicy:    p,
+		StorageUnit:     s,
+	}, nil
+}
+
 func (j *ScheduledJob) Start() error {
 	if result := repository.Db.Model(&repository.ScheduledJob{}).Where("id = ?", j.ID).Updates(map[string]interface{}{
 		"status":     "running",

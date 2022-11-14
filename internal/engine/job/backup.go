@@ -7,7 +7,6 @@ import (
 	"github.com/skyline93/syncbyte-go/internal/engine/client"
 	"github.com/skyline93/syncbyte-go/internal/engine/entity"
 	"github.com/skyline93/syncbyte-go/internal/engine/repository"
-	"gorm.io/gorm"
 )
 
 type JobResult struct {
@@ -89,7 +88,15 @@ func (j *BackupJob) Run() error {
 	return nil
 }
 
-func GetBackupJob(id uint, db *gorm.DB) (j *BackupJob, err error) {
+func LoadBackupJob(id uint) (j *BackupJob, err error) {
+	db := repository.Db.Begin()
+	defer func() {
+		if err != nil {
+			db.Rollback()
+		}
+		db.Commit()
+	}()
+
 	sj := repository.ScheduledJob{}
 
 	if result := db.Where("id = ?", id).First(&sj); result.Error != nil {
@@ -122,6 +129,7 @@ func GetBackupJob(id uint, db *gorm.DB) (j *BackupJob, err error) {
 			ResourceType:    pl.Resource.ResourceType,
 			StorageUnitType: stu.StuType,
 		},
+		client: client.NewGRPClient("127.0.0.1:50051"),
 	}
 
 	return j, nil
