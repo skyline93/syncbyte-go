@@ -55,7 +55,7 @@ func getSchedulingJobs() (jobs []job.ScheduledJob, err error) {
 		tx.Commit()
 	}()
 
-	js := []repository.ScheduledJob{}
+	var js []repository.ScheduledJob
 	if result := tx.Where("status = ?", "queued").Find(&js); result.Error != nil {
 		return nil, result.Error
 	}

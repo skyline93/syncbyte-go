@@ -25,14 +25,27 @@ func (s *RPCServer) Call(ctx context.Context, in *pb.Request) (*pb.Response, err
 
 	switch in.Action {
 	case "backup":
-		res, err := json.Marshal(`{"job_id": 1}`)
+		res, err := json.Marshal(pb.StartBackupResponse{JobID: 1})
 		if err != nil {
 			return nil, err
 		}
 
 		return &pb.Response{Result: res}, nil
 	case "jobResult":
-		res, err := json.Marshal(`{"status": "successed", "result": 1024}`)
+		result := struct {
+			Status        string
+			BackupSetSize uint64
+		}{
+			Status:        "",
+			BackupSetSize: 1024,
+		}
+
+		v, err := json.Marshal(result)
+		if err != nil {
+			return nil, err
+		}
+
+		res, err := json.Marshal(pb.GetJobResultResponse{Status: "successed", Result: v})
 		if err != nil {
 			return nil, err
 		}

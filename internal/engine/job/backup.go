@@ -85,6 +85,10 @@ func (j *BackupJob) Run() error {
 	if err = j.UpdateBackupSetSize(jobResult.BackupSetSize); err != nil {
 		return err
 	}
+
+	if err := j.Success(); err != nil {
+		return err
+	}
 	return nil
 }
 

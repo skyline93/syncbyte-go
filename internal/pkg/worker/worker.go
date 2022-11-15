@@ -145,13 +145,15 @@ func (w *Worker) Run() {
 }
 
 func (w *Worker) run(j Job) {
+	var err error
+
 	defer func() {
-		if err := recover(); err != nil {
+		if err != nil {
 			log.Printf("job error, msg: %v", err)
 		}
 	}()
 
-	j.Run()
+	err = j.Run()
 }
 
 func (w *Worker) Submit(j Job) {
