@@ -2,7 +2,7 @@
 @BaseUrl=http://192.168.1.139:8000
 
 
-###
+### 创建备份策略
 
 POST {{BaseUrl}}/api/v1/policy HTTP/1.1
 Content-Type: application/json
@@ -27,7 +27,7 @@ Content-Type: application/json
     }
 }
 
-###
+### 添加主机
 
 POST {{BaseUrl}}/api/v1/host HTTP/1.1
 Content-Type: application/json
@@ -38,7 +38,7 @@ Content-Type: application/json
     "host_type": "backup"
 }
 
-###
+### 添加存储单元
 
 POST {{BaseUrl}}/api/v1/storageunit HTTP/1.1
 Content-Type: application/json
@@ -55,7 +55,7 @@ Content-Type: application/json
     }
 }
 
-###
+### 发起备份任务
 
 POST {{BaseUrl}}/api/v1/backup/job HTTP/1.1
 Content-Type: application/json
