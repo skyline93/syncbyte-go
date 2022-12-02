@@ -11,6 +11,11 @@ type Local struct {
 }
 
 func (l *Local) Save(fileName string, read io.Reader) error {
+	_, err := os.Stat(l.Path)
+	if os.IsNotExist(err) {
+		os.MkdirAll(l.Path, 0766)
+	}
+
 	p := filepath.Join(l.Path, fileName)
 
 	fs, err := os.Create(p)
