@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/skyline93/syncbyte-go/pkg/cache"
 )
 
 func genUuid() string {
@@ -88,7 +89,7 @@ func NewBackuper(isCompress bool, dataStore DataStore) *Backuper {
 	}
 }
 
-func (b *Backuper) Backup(path string) (err error) {
+func (b *Backuper) backup(path string) (err error) {
 	bt := time.Now().Format("20060102150405")
 
 	if b.IsCompress {
@@ -119,6 +120,55 @@ func (b *Backuper) Backup(path string) (err error) {
 	blk.Close()
 
 	fmt.Printf("md5: %s\n", blk.Hash())
+
+	return nil
+}
+
+type Jobs struct {
+	cache *cache.Cache
+}
+
+type JobDetail struct {
+	Status string
+	Type   string
+}
+
+func (j *Jobs) Add(jd *JobDetail) (id string) {
+	return j.cache.SetDefaultWithUuidKey(&jd)
+}
+
+func (j *Jobs) Get(id string) *JobDetail {
+	result := j.cache.Get(id)
+
+	jd, ok := result.(JobDetail)
+	if !ok {
+		return nil
+	}
+
+	return &jd
+}
+
+func (j *Jobs) Update(id string, jd *JobDetail) {
+	jobs.cache.SetDefault(id, jd)
+}
+
+func NewJobs() *Jobs {
+	return &Jobs{
+		cache: cache.New(1024, cache.DefaultDuration*60*30, time.Second*60*30),
+	}
+}
+
+var jobs *Jobs = NewJobs()
+
+func (b *Backuper) Backup(path string) (err error) {
+	jobID := jobs.Add(&JobDetail{Status: "running", Type: "backup"})
+
+	if err = b.backup(path); err != nil {
+		jobs.Update(jobID, &JobDetail{Status: "failed", Type: "backup"})
+		return err
+	}
+
+	jobs.Update(jobID, &JobDetail{Status: "succeeded", Type: "backup"})
 
 	return nil
 }
