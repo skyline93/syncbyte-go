@@ -1,8 +1,9 @@
 package backuper
 
 import (
-	"crypto/sha256"
+	"crypto/md5"
 	"encoding/hex"
+	"fmt"
 	"hash"
 	"io"
 	"os"
@@ -17,7 +18,8 @@ func genUuid() string {
 	return u.String()
 }
 
-var HashType = sha256.New()
+// var HashType = sha256.New()
+var HashType = md5.New()
 
 type Block struct {
 	io.WriteCloser
@@ -115,6 +117,8 @@ func (b *Backuper) Backup(path string) (err error) {
 	}
 
 	blk.Close()
+
+	fmt.Printf("md5: %s\n", blk.Hash())
 
 	return nil
 }
