@@ -8,6 +8,7 @@ require (
 	github.com/google/uuid v1.1.2
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.5.0
+	github.com/pierrec/lz4 v2.6.1+incompatible
 	github.com/pierrec/lz4/v4 v4.1.17
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.6.1
