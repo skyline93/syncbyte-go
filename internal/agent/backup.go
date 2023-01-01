@@ -1,15 +1,13 @@
 package agent
 
 import (
+	"context"
 	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/skyline93/syncbyte-go/file"
-	"github.com/skyline93/syncbyte-go/pkg/logging"
 )
-
-var logger = logging.GetSugaredLogger("backup")
 
 func scanDir(root string, fChan chan string) error {
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
@@ -31,10 +29,14 @@ func scanDir(root string, fChan chan string) error {
 
 type BackupManager struct {
 	dataStore file.DataStore
+	wp        *WorkerPool
 }
 
-func NewBackupManager(store file.DataStore) *BackupManager {
-	return &BackupManager{dataStore: store}
+func NewBackupManager(store file.DataStore, ctx context.Context) *BackupManager {
+	return &BackupManager{
+		dataStore: store,
+		wp:        NewWorkerPool(ctx, 10),
+	}
 }
 
 func (b *BackupManager) Backup(dir string) error {
@@ -55,4 +57,8 @@ func (b *BackupManager) Backup(dir string) error {
 	}
 
 	return nil
+}
+
+func (b *BackupManager) Stop() {
+	b.wp.cancel()
 }

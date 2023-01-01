@@ -1,4 +1,4 @@
-package file
+package agent
 
 import (
 	"bytes"
@@ -8,10 +8,8 @@ import (
 	"path/filepath"
 
 	"github.com/pierrec/lz4"
-	"github.com/skyline93/syncbyte-go/pkg/logging"
 )
 
-var logger = logging.GetSugaredLogger("backup")
 var blockSize int64 = 1024 * 1024
 
 type PartInfo struct {
