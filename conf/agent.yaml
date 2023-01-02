@@ -1,7 +1,0 @@
-listenAddr: ":50051"
-local: true
-logPath: "/var/log/syncbyte"
-backup:
-  mountPoint: "/var/run/backup"
-restore:
-  mountPoint: "/var/run/restore"

@@ -1,8 +1,0 @@
-kind: backend
-spec:
-  - endpoint: backend:9000
-    accessKey: accesskey123
-    secretKey: secretkey123
-    bucket: syncbyte-dev
-    storageType: minio
-    dataType: pg_data

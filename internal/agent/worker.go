@@ -138,10 +138,10 @@ func (w *worker) Run() {
 	for {
 		select {
 		case job := <-w.jobChan:
-			log.Printf("worker [%s] receive job", w.ID)
+			logger.Infof("worker [%s] receive job", w.ID)
 			w.run(job)
 		case <-w.ctx.Done():
-			log.Printf("worker [%s] exit", w.ID)
+			logger.Infof("worker [%s] exit", w.ID)
 			return
 		}
 	}

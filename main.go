@@ -1,27 +1,23 @@
 package main
 
 import (
-	"github.com/skyline93/syncbyte-go/agent"
-	"github.com/skyline93/syncbyte-go/file"
+	"context"
+
+	"github.com/skyline93/syncbyte-go/internal/agent"
 	"github.com/skyline93/syncbyte-go/pkg/logging"
-	// "github.com/skyline93/syncbyte-go/internal/agent"
 )
 
 func main() {
 	logger := logging.GetSugaredLogger("backup")
 
-	dir := "/home/greene/workspace/syncbyte-go/pkg/cache"
-	// filename := "/home/greene/Python-3.11.0.tar.xz"
-	// filename := "/home/greene/workspace/syncbyte-go/go.mod"
+	dir := "/etc"
+
 	mountPoint := "/home/greene/workspace/syncbyte-go/datastore"
 
-	nas := file.NewNasVolume(mountPoint)
-	// err := nas.UploadFile(filename)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	nas := agent.NewNasVolume(mountPoint)
 
-	mgmt := agent.NewBackupManager(nas)
+	ctx := context.TODO()
+	mgmt := agent.NewBackupManager(nas, ctx)
 
 	logger.Infof("start backup..")
 	err := mgmt.Backup(dir)
