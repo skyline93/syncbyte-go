@@ -2,10 +2,13 @@ package agent
 
 import (
 	"bytes"
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
+	"syscall"
 
 	"github.com/pierrec/lz4"
 )
@@ -19,9 +22,19 @@ type PartInfo struct {
 }
 
 type FileInfo struct {
-	Name      string      `json:"name"`
+	Name       string `json:"name"`
+	Size       int64  `json:"size"`
+	GID        uint32 `json:"gid"`
+	UID        uint32 `json:"uid"`
+	Device     uint64 `json:"device"`
+	DeviceID   uint64 `json:"device_id"`
+	BlockSize  int64  `json:"block_size"`
+	Blocks     int64  `json:"blocks"`
+	AccessTime int64  `json:"atime"`
+	ModTime    int64  `json:"mtime"`
+	ChangeTime int64  `json:"ctime"`
+
 	Path      string      `json:"path"`
-	Size      int64       `json:"size"`
 	MD5       string      `json:"md5"`
 	PartInfos []*PartInfo `json:"part_info"`
 }
@@ -53,8 +66,7 @@ func UploadBigFile(filename string, callback func(string, []byte) error, fileInf
 	fhReader := NewHashReader(file)
 
 	for {
-		hReader := NewHashReader(fhReader)
-		rSize, err := hReader.Read(buf)
+		rSize, err := fhReader.Read(buf)
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -68,19 +80,35 @@ func UploadBigFile(filename string, callback func(string, []byte) error, fileInf
 			return err
 		}
 
-		if err := callback(hReader.Hash(), compressed[:l]); err != nil {
+		h := md5.New()
+		h.Write(buf)
+		hash := hex.EncodeToString(h.Sum(nil))
+
+		if err := callback(hash, compressed[:l]); err != nil {
 			return err
 		}
 
-		pi := &PartInfo{Index: partIndex, MD5: hReader.Hash(), Size: int64(rSize)}
+		pi := &PartInfo{Index: partIndex, MD5: hash, Size: int64(rSize)}
 		partInfos = append(partInfos, pi)
 
 		partIndex += 1
 	}
 
-	fileInfo.Path = filename
+	s := fi.Sys().(*syscall.Stat_t)
+
 	fileInfo.Name = fi.Name()
 	fileInfo.Size = fi.Size()
+	fileInfo.GID = s.Uid
+	fileInfo.UID = s.Uid
+	fileInfo.Device = s.Rdev
+	fileInfo.DeviceID = s.Dev
+	fileInfo.BlockSize = int64(s.Blksize)
+	fileInfo.Blocks = s.Blocks
+	fileInfo.AccessTime = s.Atim.Nano()
+	fileInfo.ModTime = s.Mtim.Nano()
+	fileInfo.ChangeTime = s.Ctim.Nano()
+
+	fileInfo.Path = filename
 	fileInfo.MD5 = fhReader.Hash()
 	fileInfo.PartInfos = partInfos
 
@@ -122,9 +150,21 @@ func UploadSmallFile(filename string, callback func(string, []byte) error, fileI
 		return err
 	}
 
+	s := fi.Sys().(*syscall.Stat_t)
+
 	fileInfo.Name = fi.Name()
-	fileInfo.Path = filename
 	fileInfo.Size = fi.Size()
+	fileInfo.GID = s.Uid
+	fileInfo.UID = s.Uid
+	fileInfo.Device = s.Rdev
+	fileInfo.DeviceID = s.Dev
+	fileInfo.BlockSize = int64(s.Blksize)
+	fileInfo.Blocks = s.Blocks
+	fileInfo.AccessTime = s.Atim.Nano()
+	fileInfo.ModTime = s.Mtim.Nano()
+	fileInfo.ChangeTime = s.Ctim.Nano()
+
+	fileInfo.Path = filename
 	fileInfo.MD5 = hReader.Hash()
 
 	return nil

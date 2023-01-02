@@ -24,9 +24,19 @@ type PartInfo struct {
 }
 
 type FileInfo struct {
-	Name      string      `json:"name"`
+	Name       string `json:"name"`
+	Size       int64  `json:"size"`
+	GID        uint32 `json:"gid"`
+	UID        uint32 `json:"uid"`
+	Device     uint64 `json:"device"`
+	DeviceID   uint64 `json:"device_id"`
+	BlockSize  int64  `json:"block_size"`
+	Blocks     int64  `json:"blocks"`
+	AccessTime int64  `json:"atime"`
+	ModTime    int64  `json:"mtime"`
+	ChangeTime int64  `json:"ctime"`
+
 	Path      string      `json:"path"`
-	Size      int64       `json:"size"`
 	MD5       string      `json:"md5"`
 	PartInfos []*PartInfo `json:"part_info"`
 }
@@ -72,11 +82,20 @@ func backup(client pb.SyncbyteClient, fiChan chan FileInfo, sourcePath, mountPoi
 		}
 
 		fi := FileInfo{
-			Name:      resp.Name,
-			Path:      resp.Path,
-			Size:      resp.Size,
-			MD5:       resp.MD5,
-			PartInfos: partInfos,
+			Name:       resp.Name,
+			Size:       resp.Size,
+			GID:        resp.GID,
+			UID:        resp.UID,
+			Device:     resp.Device,
+			DeviceID:   resp.DeviceID,
+			BlockSize:  resp.BlockSize,
+			Blocks:     resp.Blocks,
+			AccessTime: resp.AccessTime,
+			ModTime:    resp.ModTime,
+			ChangeTime: resp.ChangeTime,
+			Path:       resp.Path,
+			MD5:        resp.MD5,
+			PartInfos:  partInfos,
 		}
 
 		fiChan <- fi

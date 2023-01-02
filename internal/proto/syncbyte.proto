@@ -22,10 +22,21 @@ message DataStoreParams {
 
 message BackupResponse {
     string Name = 1;
-    string path = 2;
+    string Path = 2;
     int64 Size = 3;
     string MD5 = 4;
-    repeated PartInfo PartInfos = 5;
+
+    uint32 GID = 5;
+	uint32 UID = 6;
+	uint64 Device = 7;
+	uint64 DeviceID = 8;
+	int64 BlockSize = 9;
+	int64 Blocks = 10;
+	int64 AccessTime = 11;
+	int64 ModTime = 12;
+	int64 ChangeTime = 13;
+
+    repeated PartInfo PartInfos = 14;
 }
 
 message PartInfo {

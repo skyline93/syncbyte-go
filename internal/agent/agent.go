@@ -39,11 +39,20 @@ func (s *syncbyteServer) Backup(req *pb.BackupRequest, stream pb.Syncbyte_Backup
 		}
 
 		if err := stream.Send(&pb.BackupResponse{
-			Name:      fi.Name,
-			Path:      fi.Path,
-			Size:      fi.Size,
-			MD5:       fi.MD5,
-			PartInfos: infos,
+			Name:       fi.Name,
+			Path:       fi.Path,
+			Size:       fi.Size,
+			MD5:        fi.MD5,
+			GID:        fi.GID,
+			UID:        fi.UID,
+			Device:     fi.Device,
+			DeviceID:   fi.DeviceID,
+			BlockSize:  fi.BlockSize,
+			Blocks:     fi.Blocks,
+			AccessTime: fi.AccessTime,
+			ModTime:    fi.ModTime,
+			ChangeTime: fi.ChangeTime,
+			PartInfos:  infos,
 		}); err != nil {
 			return err
 		}
