@@ -26,17 +26,13 @@ func scanDir(root string, fChan chan string) error {
 
 type BackupManager struct {
 	dataStore DataStore
-	wp        *WorkerPool
 }
 
 func NewBackupManager(store DataStore, ctx context.Context) *BackupManager {
-	return &BackupManager{
-		dataStore: store,
-		wp:        NewWorkerPool(ctx, 10),
-	}
+	return &BackupManager{dataStore: store}
 }
 
-func (b *BackupManager) Backup(dir string) error {
+func (b *BackupManager) Backup(dir string, fiChan chan FileInfo) error {
 	fChan := make(chan string)
 
 	logger.Infof("scan dir in %s", dir)
@@ -50,12 +46,10 @@ func (b *BackupManager) Backup(dir string) error {
 			continue
 		}
 
-		logger.Debugf("fileInfo: %s", fi.String())
+		fiChan <- fi
 	}
 
-	return nil
-}
+	close(fiChan)
 
-func (b *BackupManager) Stop() {
-	b.wp.cancel()
+	return nil
 }

@@ -19,10 +19,10 @@ type PartInfo struct {
 }
 
 type FileInfo struct {
-	Name     string      `json:"name"`
-	Size     int64       `json:"size"`
-	MD5      string      `json:"md5"`
-	PartInfo []*PartInfo `json:"part_info"`
+	Name      string      `json:"name"`
+	Size      int64       `json:"size"`
+	MD5       string      `json:"md5"`
+	PartInfos []*PartInfo `json:"part_info"`
 }
 
 func (fi *FileInfo) String() string {
@@ -35,7 +35,7 @@ func UploadBigFile(filename string, callback func(string, []byte) error, fileInf
 		buf        []byte = make([]byte, blockSize)
 		compressed []byte = make([]byte, blockSize*2)
 		partIndex  int    = 1
-		partInfo   []*PartInfo
+		partInfos  []*PartInfo
 	)
 
 	fi, err := os.Stat(filename)
@@ -72,7 +72,7 @@ func UploadBigFile(filename string, callback func(string, []byte) error, fileInf
 		}
 
 		pi := &PartInfo{Index: partIndex, MD5: hReader.Hash(), Size: int64(rSize)}
-		partInfo = append(partInfo, pi)
+		partInfos = append(partInfos, pi)
 
 		partIndex += 1
 	}
@@ -80,7 +80,7 @@ func UploadBigFile(filename string, callback func(string, []byte) error, fileInf
 	fileInfo.Name = fi.Name()
 	fileInfo.Size = fi.Size()
 	fileInfo.MD5 = fhReader.Hash()
-	fileInfo.PartInfo = partInfo
+	fileInfo.PartInfos = partInfos
 
 	return nil
 }

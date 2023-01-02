@@ -1,0 +1,34 @@
+syntax = "proto3";
+option go_package = "github.com/skyline93/syncbyte-go/internal/proto";
+
+package proto;
+
+service Syncbyte {
+    rpc Backup(BackupRequest) returns (stream BackupResponse) {}
+}
+
+message BackupRequest {
+    BackupParams BackupParams = 1;
+    DataStoreParams DataStoreParams = 2;
+}
+
+message BackupParams {
+    string SourcePath = 1;
+}
+
+message DataStoreParams {
+    string MountPoint = 1;
+}
+
+message BackupResponse {
+    string Name = 1;
+    int64 Size = 2;
+    string MD5 = 3;
+    repeated PartInfo PartInfos = 4;
+}
+
+message PartInfo {
+    int32 Index = 1;
+    string MD5 = 2;
+    int64 Size = 3;
+}
