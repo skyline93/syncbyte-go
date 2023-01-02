@@ -2,7 +2,6 @@ package agent
 
 import (
 	"context"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -47,7 +46,7 @@ func (b *BackupManager) Backup(dir string) error {
 		var fi FileInfo
 
 		if err := b.dataStore.UploadFile(f, &fi); err != nil {
-			log.Printf("upload file failed, err: %v", err)
+			logger.Errorf("upload file failed, err: %v", err)
 			continue
 		}
 

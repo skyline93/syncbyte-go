@@ -2,7 +2,6 @@ package agent
 
 import (
 	"context"
-	"log"
 	"sync"
 	"time"
 
@@ -152,7 +151,7 @@ func (w *worker) run(j Job) {
 
 	defer func() {
 		if err != nil {
-			log.Printf("job error, msg: %v", err)
+			logger.Errorf("job error, msg: %v", err)
 		}
 	}()
 
