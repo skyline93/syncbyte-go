@@ -20,6 +20,7 @@ type PartInfo struct {
 
 type FileInfo struct {
 	Name      string      `json:"name"`
+	Path      string      `json:"path"`
 	Size      int64       `json:"size"`
 	MD5       string      `json:"md5"`
 	PartInfos []*PartInfo `json:"part_info"`
@@ -77,6 +78,7 @@ func UploadBigFile(filename string, callback func(string, []byte) error, fileInf
 		partIndex += 1
 	}
 
+	fileInfo.Path = filename
 	fileInfo.Name = fi.Name()
 	fileInfo.Size = fi.Size()
 	fileInfo.MD5 = fhReader.Hash()
@@ -121,6 +123,7 @@ func UploadSmallFile(filename string, callback func(string, []byte) error, fileI
 	}
 
 	fileInfo.Name = fi.Name()
+	fileInfo.Path = filename
 	fileInfo.Size = fi.Size()
 	fileInfo.MD5 = hReader.Hash()
 

@@ -22,9 +22,10 @@ message DataStoreParams {
 
 message BackupResponse {
     string Name = 1;
-    int64 Size = 2;
-    string MD5 = 3;
-    repeated PartInfo PartInfos = 4;
+    string path = 2;
+    int64 Size = 3;
+    string MD5 = 4;
+    repeated PartInfo PartInfos = 5;
 }
 
 message PartInfo {

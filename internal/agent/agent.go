@@ -40,6 +40,7 @@ func (s *syncbyteServer) Backup(req *pb.BackupRequest, stream pb.Syncbyte_Backup
 
 		if err := stream.Send(&pb.BackupResponse{
 			Name:      fi.Name,
+			Path:      fi.Path,
 			Size:      fi.Size,
 			MD5:       fi.MD5,
 			PartInfos: infos,

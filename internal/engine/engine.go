@@ -8,11 +8,14 @@ import (
 
 	pb "github.com/skyline93/syncbyte-go/internal/proto"
 	"github.com/skyline93/syncbyte-go/pkg/logging"
+	"github.com/skyline93/syncbyte-go/pkg/mongodb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 var logger = logging.GetSugaredLogger("engine")
+
+const uri = "mongodb://mongoadmin:123456@10.168.1.202:27017/?maxPoolSize=20&w=majority"
 
 type PartInfo struct {
 	Index int    `json:"index"`
@@ -22,6 +25,7 @@ type PartInfo struct {
 
 type FileInfo struct {
 	Name      string      `json:"name"`
+	Path      string      `json:"path"`
 	Size      int64       `json:"size"`
 	MD5       string      `json:"md5"`
 	PartInfos []*PartInfo `json:"part_info"`
@@ -69,6 +73,7 @@ func backup(client pb.SyncbyteClient, fiChan chan FileInfo, sourcePath, mountPoi
 
 		fi := FileInfo{
 			Name:      resp.Name,
+			Path:      resp.Path,
 			Size:      resp.Size,
 			MD5:       resp.MD5,
 			PartInfos: partInfos,
@@ -85,6 +90,12 @@ func Backup(address string, sourcePath, mountPoint string) error {
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
+	mongoClient, err := mongodb.NewClient(uri)
+	if err != nil {
+		panic(err)
+	}
+	defer mongoClient.Close()
+
 	conn, err := grpc.Dial(address, opts...)
 	if err != nil {
 		return err
@@ -96,7 +107,14 @@ func Backup(address string, sourcePath, mountPoint string) error {
 	fiChan := make(chan FileInfo)
 	go backup(client, fiChan, sourcePath, mountPoint)
 
+	col := mongoClient.GetCollection("backup01")
+
 	for fi := range fiChan {
+		if _, err := col.InsertOne(context.TODO(), fi); err != nil {
+			logger.Errorf("insert error, err: %v", err)
+			continue
+		}
+
 		logger.Debugf("fi: %s", fi.String())
 	}
 
