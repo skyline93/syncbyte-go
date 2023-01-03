@@ -42,11 +42,14 @@ var options Options
 func init() {
 	cmdRoot.AddCommand(cmdBackup)
 
-	f := cmdBackup.PersistentFlags()
+	f := cmdBackup.Flags()
 	f.StringVarP(&options.Host, "host", "H", "127.0.0.1", "server host")
 	f.IntVarP(&options.Port, "port", "p", 50051, "server port")
 	f.StringVarP(&options.SourcePath, "source", "s", "", "source path")
 	f.StringVarP(&options.MountPoint, "dest", "d", "", "dest path")
+
+	cmdBackup.MarkFlagRequired("source")
+	cmdBackup.MarkFlagRequired("dest")
 }
 
 func Execute() {
