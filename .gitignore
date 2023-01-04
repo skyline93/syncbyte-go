@@ -16,6 +16,7 @@
 
 *.log
 .idea
+.vscode
 output
 data
 logs
